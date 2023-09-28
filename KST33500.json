@@ -1,0 +1,63 @@
+{
+  "name": "KST33500",
+  "devicetype": "FunctionGenerator",
+  "superclass": "KeysightDevice",
+  "commands": [
+    {
+      "name": "toggle",
+      "type": "generated",
+      "signature": "enable: bool",
+      "command": "f'OUTPut {\"ON\" if enable else \"OFF\"}'"
+    },
+    {
+      "name": "set_frequency",
+      "type": "generated",
+      "signature": "frequency: float",
+      "command": "f'FREQuency {frequency}'"
+    },
+    {
+      "name": "set_amplitude",
+      "type": "generated",
+      "signature": "frequency: float, constrain: str",
+      "command": "f'VOLTage{\":\" + constrain if constrain else \"\"} {frequency}'"
+    },
+    {
+      "name": "set_offset",
+      "type": "generated",
+      "signature": "offset: float",
+      "command": "f'VOLTage:OFFSet {offset}'"
+    },
+    {
+      "name": "set_phase",
+      "type": "generated",
+      "signature": "phase: float",
+      "command": "f'PHASe {phase}'"
+    },
+    {
+      "name": "set_function",
+      "type": "generated",
+      "signature": "function: FunctionType",
+      "command": "f'FUNCtion {function.value}'"
+    },
+    {
+      "name": "display",
+      "type": "generated",
+      "signature": "text: str",
+      "command": "f\"DISP:TEXT '{text}'\"",
+      "TODO": "Maybe DISP On needed?"
+    },
+    {
+      "name": "display_clear",
+      "type": "generated",
+      "signature": "",
+      "command": "'DISPlay:TEXT:CLEar'"
+    },
+    {
+      "name": "set_pulsewidth",
+      "docs": "Pulswidth unit: ms",
+      "type": "generated",
+      "signature": "pulsewidth: float",
+      "command": "f'FUNCtion:PULSe:WIDTh {pulsewidth} ms'"
+    }
+  ]
+}

@@ -1,0 +1,162 @@
+{
+  "name": "KST3000",
+  "devicetype": "Oscilloscope",
+  "superclass": "KeysightDevice",
+  "commands": [
+    {
+      "name": "run",
+      "type": "generated",
+      "signature": "",
+      "command": "'RUN'"
+    },
+    {
+      "name": "stop",
+      "type": "generated",
+      "signature": "",
+      "command": "'STOP'"
+    },
+    {
+      "name": "single",
+      "type": "generated",
+      "signature": "",
+      "command": "'SINGLE'"
+    },
+    {
+      "name": "auto_scale",
+      "type": "generated",
+      "signature": "",
+      "command": "'AUToscale'"
+    },
+    {
+      "name": "set_time_range",
+      "type": "generated",
+      "signature": "range_: float",
+      "command": "f'TIMebase:RANGe {range_}'"
+    },
+    {
+      "name": "set_channel_offset",
+      "type": "generated",
+      "signature": "channel: OscChannel, offset: float",
+      "command": "f'CHANnel{channel.value}:offset {offset}'",
+      "TODO": "Check if channel.value is right"
+    },
+    {
+      "name": "set_channel_scale",
+      "type": "generated",
+      "signature": "channel: OscChannel, scale: float",
+      "command": "f'CHANnel{channel.value}:SCALe {scale}'",
+      "TODO": "Check if channel.value is right"
+    },
+    {
+      "name": "set_channel_range",
+      "type": "generated",
+      "signature": "channel: OscChannel, value: float, voltage_unit: VoltageUnit",
+      "command": "f'CHANnel{channel.value}:RANGe range {\"mV\" if voltage_unit == VoltageUnit.MILLI_VOLT else \"\"}'"
+    },
+    {
+      "name": "set_trigger_edge",
+      "type": "generated",
+      "signature": "edge: TriggerEdge",
+      "command": "f'TRIGger:SLOPe {edge.value}'"
+    },
+    {
+      "name": "set_trigger_source",
+      "type": "generated",
+      "signature": "channel: OscChannel",
+      "command": "f'TRIGger:SOURceCHAN{channel.value}'",
+      "TODO": "Check"
+    },
+    {
+      "name": "set_time_delay",
+      "type": "generated",
+      "signature": "delay: float",
+      "command": "f'TIMebase:DELay {delay}'"
+    },
+    {
+      "name": "set_waveform_source",
+      "type": "generated",
+      "signature": "channel: OscChannel",
+      "command": "f'WAVeform:SOURce CHANnel{channel.value}'"
+    },
+    {
+      "name": "get_waveform_preamble",
+      "type": "generated",
+      "signature": "",
+      "return": "str",
+      "command": "f'WAVeform:PREamble?'",
+      "TODO": "Introduce Keysight superclass for new query method"
+    },
+    {
+      "name": "get_waveform_points",
+      "type": "generated",
+      "signature": "",
+      "return": "int",
+      "command": "'WAVeform:POINts?'"
+    },
+    {
+      "name": "set_waveform_points",
+      "type": "generated",
+      "signature": "num_points: int",
+      "command": "f'WAVeform:POINts {num_points}'"
+    },
+    {
+      "name": "set_waveform_points_mode",
+      "type": "generated",
+      "signature": "mode: str",
+      "command": "f'WAVeform:POINts:MODE {mode}'"
+    },
+    {
+      "name": "set_waveform_format",
+      "type": "generated",
+      "signature": "format_: FileFormat",
+      "command": "f'WAVeform:FORMat {format_.value}'"
+    },
+    {
+      "name": "save_waveform_data",
+      "type": "generated",
+      "signature": "file_path: str",
+      "command": "''",
+      "TODO": "IMPLEMENT!"
+    },
+    {
+      "name": "get_waveform_data",
+      "type": "generated",
+      "signature": "",
+      "return": "str",
+      "command": "'WAVeform:DATA?'",
+      "TODO": "Maybe make substring [10:-1]"
+    },
+    {
+      "name": "get_real_data",
+      "type": "generated",
+      "signature": "",
+      "return": "str",
+      "command": "''",
+      "TODO": "IMPLEMENT!"
+    },
+    {
+      "name": "digitize",
+      "type": "generated",
+      "signature": "channel: OscChannel",
+      "command": "f'DIGitize CHAnnel{channel.value}'"
+    },
+    {
+      "name": "get_system_setup",
+      "type": "generated",
+      "signature": "",
+      "command": "'SYSTem:SETup?'"
+    },
+    {
+      "name": "set_display_mode",
+      "type": "generated",
+      "signature": "display_mode: DisplayModes",
+      "command": "f'TIMebase:MODE {display_mode.value}'"
+    },
+    {
+      "name": "set_channel_display",
+      "type": "generated",
+      "signature": "channel: OscChannel, enable: bool",
+      "command": "f'CHANnel:DISPLAY{channel.value} {int(enable)}'"
+    }
+  ]
+}

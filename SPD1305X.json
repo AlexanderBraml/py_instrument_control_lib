@@ -1,0 +1,61 @@
+{
+  "name": "SPD1305X",
+  "devicetype": "PowerSupply",
+  "superclass": "KeysightDevice",
+  "commands": [
+    {
+      "name": "measure",
+      "type": "generated",
+      "signature": "unit: PSUnit, channel: PSChannel",
+      "command": "f'MEASure:{unit.value} {channel.value}'"
+    },
+    {
+      "name": "toggle",
+      "type": "generated",
+      "signature": "channel: PSChannel, enable: bool",
+      "command": "f'OUTPut {channel.value}, {\"ON\" if enable else \"OFF\"}'"
+    },
+    {
+      "name": "set_current",
+      "type": "generated",
+      "signature": "channel: PSChannel, current: float",
+      "command": "f'{channel.value}:CURRent {current}'"
+    },
+    {
+      "name": "get_current",
+      "type": "generated",
+      "signature": "channel: PSChannel",
+      "command": "f'{channel.value}:CURRent?'"
+    },
+    {
+      "name": "set_voltage",
+      "type": "generated",
+      "signature": "channel: PSChannel, voltage: float",
+      "command": "f'{channel.value}:VOLTage {voltage}'"
+    },
+    {
+      "name": "get_voltage",
+      "type": "generated",
+      "signature": "",
+      "command": "f'{channel.value}:VOLTage?'"
+    },
+    {
+      "name": "set_mode",
+      "type": "generated",
+      "signature": "mode: PSMode",
+      "command": "f'MODE:SET {mode.value}'"
+    },
+    {
+      "name": "lock_input",
+      "type": "generated",
+      "signature": "",
+      "command": "'LOCK'"
+    },
+    {
+      "name": "unlock_input",
+      "type": "generated",
+      "signature": "",
+      "command": "'*UNLOCK'"
+    }
+  ]
+}

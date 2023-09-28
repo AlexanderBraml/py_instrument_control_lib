@@ -1,0 +1,130 @@
+{
+  "name": "KEI2600",
+  "devicetype": "SMU",
+  "superclass": "KeithleyDevice",
+  "commands": [
+    {
+      "name": "measure",
+      "docs": "This function measures a certain unit on a specific channel. Can be used to measure voltage, current, power or resistance.\n:param unit: The thing to measure.\n:param channel: The channel to measure on.\n:param check_errors: Whether to check the error buffer after the execution.\n:return: None.",
+      "type": "generated",
+      "signature": "unit: Unit, channel: SMUChannel",
+      "return": "float",
+      "command": "f'{channel.value}.measure.{unit.value}()'"
+    },
+    {
+      "name": "toggle_channel",
+      "type": "generated",
+      "signature": "channel: SMUChannel, enable: bool",
+      "command": "f'{channel.value}.source.output = {channel.value}.OUTPUT_{(\"ON\" if enable else \"OFF\")}'"
+    },
+    {
+      "name": "set_level",
+      "type": "generated",
+      "signature": "unit: Unit, channel: SMUChannel, level: float",
+      "requirements": "unit in (Unit.VOLTAGE, Unit.CURRENT)",
+      "command": "f'{channel.value}.source.level{unit.value} = {level}'"
+    },
+    {
+      "name": "set_limit",
+      "type": "generated",
+      "signature": "unit: Unit, channel: SMUChannel, limit: float",
+      "requirements": "unit in (Unit.VOLTAGE, Unit.CURRENT, Unit.POWER)",
+      "command": "f'{channel.value}.source.limit{unit.value} = {str(limit)}'"
+    },
+    {
+      "name": "toggle_autorange",
+      "type": "generated",
+      "signature": "unit: Unit, channel: SMUChannel, mode: SMUMode, enable: bool",
+      "requirements": "unit in (Unit.VOLTAGE, Unit.CURRENT)",
+      "command": "f'{channel.value}.{mode.value}.autorange{unit.value} = {int(enable) if mode == SMUMode.MEASURE else channel.value + \".AUTORANGE_\" + (\"ON\" if enable else \"OFF\")}'"
+    },
+    {
+      "name": "toggle_measure_analog_filter",
+      "type": "generated",
+      "signature": "channel: SMUChannel, enable: bool",
+      "command": "f'{channel.value}.measure.analogfilter = {int(enable)}'"
+    },
+    {
+      "name": "set_range",
+      "type": "generated",
+      "signature": "unit: Unit, channel: SMUChannel, mode: SMUMode, range_: float",
+      "requirements": "unit in (Unit.VOLTAGE, Unit.CURRENT)",
+      "command": "f'{channel.value}.{mode.value}.range{unit.value} = {range_}'"
+    },
+    {
+      "name": "set_sense_mode",
+      "type": "generated",
+      "signature": "channel: SMUChannel, sense_arg: SMUSense",
+      "command": "f'{channel.value}.sense = {channel.value}.{sense_arg.value}'"
+    },
+    {
+      "name": "set_measure_plc",
+      "type": "generated",
+      "signature": "channel: SMUChannel, value: float",
+      "requirements": "0.001 < value < 25",
+      "command":  "f'{channel.value}.measure.nplc = {value}'"
+    },
+    {
+      "name": "set_measure_low_range",
+      "type": "generated",
+      "signature": "unit: Unit, channel: SMUChannel, value: float",
+      "requirements": "unit in (Unit.VOLTAGE, Unit.CURRENT)",
+      "command":  "f'{channel.value}.measure.lowrange{unit.value} = {value}'"
+    },
+    {
+      "name": "set_measure_auto_zero",
+      "type": "generated",
+      "signature": "channel: SMUChannel, auto_zero: Autozero",
+      "command":  "f'{channel.value}.measure.autozero = {channel.value}.{auto_zero.value}'"
+    },
+    {
+      "name": "set_measure_count",
+      "type": "generated",
+      "signature": "channel: SMUChannel, nr_of_measurements: int",
+      "command":  "f'{channel.value}.measure.count = {nr_of_measurements}'"
+    },
+    {
+      "name": "set_source_function",
+      "type": "generated",
+      "signature": "channel: SMUChannel, src_func: SourceFunction",
+      "command":  "f'{channel.value}.source.func = {channel.value}.{src_func.value}'"
+    },
+    {
+      "name": "set_source_off_mode",
+      "type": "generated",
+      "signature": "channel: SMUChannel, src_off_mode: SourceOffMode",
+      "command":  "f'{channel.value}.source.offmode = {channel.value}.{src_off_mode.value}'"
+    },
+    {
+      "name": "set_source_settling",
+      "type": "generated",
+      "signature": "channel: SMUChannel, src_settling: SourceSettling",
+      "command":  "f'{channel.value}.source.settling = {channel.value}.{src_settling.value}'"
+    },
+    {
+      "name": "toggle_source_sink",
+      "type": "generated",
+      "signature": "channel: SMUChannel, enable: bool",
+      "command":  "f'{channel.value}.source.sink = {str(int(enable))}'"
+    },
+    {
+      "name": "display_measure_function",
+      "type": "generated",
+      "signature": "channel: SMUChannel, diplay_measure_func: SMUDisplay",
+      "command":  "f'display.{channel.value}.measure.func = display.{diplay_measure_func.value}'"
+    },
+    {
+      "name": "toggle_beep",
+      "type": "generated",
+      "signature": "enable: bool",
+      "command": "f'beeper.enable = beeper.{\"ON\" if enable else \"OFF\"}'"
+    },
+    {
+      "name": "beep",
+      "type": "generated",
+      "docs": "Send a beeping sound with a specific duration and frequency to the SMU.\n:param duration: Time in seconds to play the beeping sound.\n:param frequency: Frequency in HZ of the sound to play.\n:param check_errors: Whether to check the error buffer after the execution.\n:return: None.",
+      "signature": "duration: float, frequency: int",
+      "command": "f'beeper.beep({duration}, {frequency})'"
+    }
+  ]
+}
