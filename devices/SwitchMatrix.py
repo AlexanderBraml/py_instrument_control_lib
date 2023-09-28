@@ -2,8 +2,8 @@ import time
 
 import serial
 
-from base import Device
-from base.DeviceConfigs import SerialDeviceConfig
+from device_base import Device
+from device_base.DeviceConfigs import SerialDeviceConfig
 
 
 class SwitchMatrix(Device):

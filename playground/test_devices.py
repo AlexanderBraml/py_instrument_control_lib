@@ -1,15 +1,15 @@
 import time
 
-from base.DeviceConfigs import TCPDeviceConfig, SerialDeviceConfig
+from device_base.DeviceConfigs import TCPDeviceConfig, SerialDeviceConfig
 from devices.KEI2600 import KEI2600
 from devices.KST3000 import KST3000
 from devices.KST33500 import KST33500
 from devices.SPD1305X import SPD1305X
 from devices.SwitchMatrix import SwitchMatrix
-from types.FunctionGenerator import *
-from types.Oscilloscope import *
-from types.PowerSupply import *
-from types.SMU import *
+from device_types.FunctionGenerator import *
+from device_types.Oscilloscope import *
+from device_types.PowerSupply import *
+from device_types.SMU import *
 
 
 def test_smu() -> None:

@@ -1,7 +1,7 @@
 from abc import ABC
 
-from devices.DeviceException import DeviceException, ErrorCode
-from devices.TCPDevice import TCPDevice
+from device_base.DeviceException import DeviceException, ErrorCode
+from device_base.TCPDevice import TCPDevice
 
 
 class KeithleyDevice(TCPDevice, ABC):

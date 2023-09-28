@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from base.DeviceConfigs import DeviceConfig
+from device_base.DeviceConfigs import DeviceConfig
 
 
 class Device(ABC):

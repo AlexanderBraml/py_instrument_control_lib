@@ -36,7 +36,7 @@
     {
       "name": "get_voltage",
       "type": "generated",
-      "signature": "",
+      "signature": "channel: PSChannel",
       "command": "f'{channel.value}:VOLTage?'"
     },
     {

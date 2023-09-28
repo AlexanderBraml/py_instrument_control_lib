@@ -1,4 +1,5 @@
 import json
+import os
 import sys
 from os.path import abspath
 
@@ -24,7 +25,11 @@ def generate_base_module(spec: dict) -> str:
 
 
 def get_default_imports() -> str:
-    with open('DEFAULT_IMPORTS.py', 'r') as f:
+    import_path = abspath('')
+    if not import_path.endswith('device_generation'):
+        import_path = os.path.join(import_path, 'device_generation')
+    import_path = os.path.join(import_path, 'DEFAULT_IMPORTS.py')
+    with open(import_path, 'r') as f:
         return f.read()
 
 
@@ -92,10 +97,10 @@ def generate_code(spec: dict) -> str:
     return generate_base_module(spec) + '\n\n' + indent('\n\n'.join(methods), 1) + '\n'
 
 
-def generate_module(filepath: str) -> None:
+def generate_module(filepath: str, target_dir: str = '.') -> None:
     spec = load_spec(abspath(filepath))
     module = DISCLAIMER.format(filepath) + '\n\n' + generate_code(spec)
-    with open(spec['name'] + '.py', 'w') as f:
+    with open(os.path.join(target_dir, spec['name'] + '.py'), 'w') as f:
         f.write(module)
 
 
