@@ -1,10 +1,18 @@
 """
-This code is automatically generated from 'KST33500.json'.
+This code is automatically generated from '../specifications/KST33500.json'.
 Any changes made to this file are overwritten if you regenerate this module.
 Only make changes in the source file.
 """
 
-from manufacturers import KeysightDevice
+from device_types.FunctionGenerator import *
+from device_types.Oscilloscope import *
+from device_types.PowerSupply import *
+from device_types.SMU import *
+from manufacturers.KeithleyDevice import KeithleyDevice
+from manufacturers.KeysightDevice import KeysightDevice
+from device_base.TCPDevice import TCPDevice
+
+_, _, _, _, _, _, _ = SMU, FunctionGenerator, PowerSupply, Oscilloscope, TCPDevice, KeysightDevice, KeithleyDevice
 
 
 class KST33500(FunctionGenerator, KeysightDevice):

@@ -1,10 +1,18 @@
 """
-This code is automatically generated from 'KEI2600.json'.
+This code is automatically generated from '../specifications/KEI2600.json'.
 Any changes made to this file are overwritten if you regenerate this module.
 Only make changes in the source file.
 """
 
-from manufacturers import KeithleyDevice
+from device_types.FunctionGenerator import *
+from device_types.Oscilloscope import *
+from device_types.PowerSupply import *
+from device_types.SMU import *
+from manufacturers.KeithleyDevice import KeithleyDevice
+from manufacturers.KeysightDevice import KeysightDevice
+from device_base.TCPDevice import TCPDevice
+
+_, _, _, _, _, _, _ = SMU, FunctionGenerator, PowerSupply, Oscilloscope, TCPDevice, KeysightDevice, KeithleyDevice
 
 
 class KEI2600(SMU, KeithleyDevice):
