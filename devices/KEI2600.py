@@ -4,8 +4,7 @@ Any changes made to this file are overwritten if you regenerate this module.
 Only make changes in the source file.
 """
 
-from devices.types.SMU import *
-from devices.manufacturers.KeithleyDevice import KeithleyDevice
+from manufacturers import KeithleyDevice
 
 
 class KEI2600(SMU, KeithleyDevice):

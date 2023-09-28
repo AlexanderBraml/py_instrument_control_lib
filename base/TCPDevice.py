@@ -1,8 +1,8 @@
 import socket
 from abc import ABC, abstractmethod
 
-from devices.Device import Device
-from devices.DeviceConfigs import TCPDeviceConfig
+from base.Device import Device
+from base.DeviceConfigs import TCPDeviceConfig
 
 
 class TCPDevice(Device, ABC):

@@ -1,8 +1,5 @@
-import socket
 from abc import ABC
 
-from devices.Device import Device
-from devices.DeviceConfigs import TCPDeviceConfig
 from devices.DeviceException import DeviceException, ErrorCode
 from devices.TCPDevice import TCPDevice
 

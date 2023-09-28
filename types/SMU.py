@@ -1,7 +1,7 @@
 from abc import abstractmethod, ABC
 from enum import Enum
 
-from devices.Device import Device
+from base.Device import Device
 
 
 class SMUChannel(Enum):

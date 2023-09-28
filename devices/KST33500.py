@@ -4,8 +4,7 @@ Any changes made to this file are overwritten if you regenerate this module.
 Only make changes in the source file.
 """
 
-from devices.types.FunctionGenerator import *
-from devices.manufacturers.KeysightDevice import KeysightDevice
+from manufacturers import KeysightDevice
 
 
 class KST33500(FunctionGenerator, KeysightDevice):

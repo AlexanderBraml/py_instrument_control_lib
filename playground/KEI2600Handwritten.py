@@ -1,4 +1,4 @@
-from devices.types.SMU import SMU, SMUChannel, Unit, SMUMode
+from types.SMU import SMU, SMUChannel, Unit, SMUMode
 from devices.TCPDevice import TCPDevice
 
 

@@ -1,7 +1,6 @@
-import socket
 from abc import ABC, abstractmethod
 
-from devices.DeviceConfigs import DeviceConfig
+from base.DeviceConfigs import DeviceConfig
 
 
 class Device(ABC):
