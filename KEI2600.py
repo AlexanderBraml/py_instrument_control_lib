@@ -5,7 +5,7 @@ Only make changes in the source file.
 """
 
 from devices.types.SMU import *
-from devices.KeithleyDevice import KeithleyDevice
+from devices.manufacturers.KeithleyDevice import KeithleyDevice
 
 
 class KEI2600(SMU, KeithleyDevice):

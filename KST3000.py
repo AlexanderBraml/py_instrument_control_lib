@@ -5,7 +5,7 @@ Only make changes in the source file.
 """
 
 from devices.types.Oscilloscope import *
-from devices.KeysightDevice import KeysightDevice
+from devices.manufacturers.KeysightDevice import KeysightDevice
 
 
 class KST3000(Oscilloscope, KeysightDevice):

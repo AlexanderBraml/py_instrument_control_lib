@@ -5,7 +5,7 @@ Only make changes in the source file.
 """
 
 from devices.types.FunctionGenerator import *
-from devices.KeysightDevice import KeysightDevice
+from devices.manufacturers.KeysightDevice import KeysightDevice
 
 
 class KST33500(FunctionGenerator, KeysightDevice):

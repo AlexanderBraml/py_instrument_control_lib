@@ -5,7 +5,7 @@ Only make changes in the source file.
 """
 
 from devices.types.PowerSupply import *
-from devices.KeysightDevice import KeysightDevice
+from devices.manufacturers.KeysightDevice import KeysightDevice
 
 
 class SPD1305X(PowerSupply, KeysightDevice):
