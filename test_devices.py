@@ -5,10 +5,10 @@ from KST3000 import KST3000
 from KST33500 import KST33500
 from SPD1305X import SPD1305X
 from devices.DeviceConfigs import TCPDeviceConfig, SerialDeviceConfig
-from devices.FunctionGenerator import *
-from devices.Oscilloscope import *
-from devices.PowerSupply import *
-from devices.SMU import *
+from devices.types.FunctionGenerator import *
+from devices.types.Oscilloscope import *
+from devices.types.PowerSupply import *
+from devices.types.SMU import *
 from devices.SwitchMatrix import SwitchMatrix
 
 

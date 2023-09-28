@@ -4,11 +4,7 @@ Any changes made to this file are overwritten if you regenerate this module.
 Only make changes in the source file.
 """
 
-from devices.SMU import *
-from devices.FunctionGenerator import *
-from devices.Oscilloscope import *
-from devices.TCPDevice import TCPDevice
-from devices.KeithleyDevice import KeithleyDevice
+from devices.types.FunctionGenerator import *
 from devices.KeysightDevice import KeysightDevice
 
 
