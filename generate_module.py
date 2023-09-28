@@ -2,14 +2,6 @@ import json
 import sys
 from os.path import abspath
 
-DEFAULT_IMPORTS = """from devices.SMU import *
-from devices.FunctionGenerator import *
-from devices.PowerSupply import *
-from devices.Oscilloscope import *
-from devices.TCPDevice import TCPDevice
-from devices.KeithleyDevice import KeithleyDevice
-from devices.KeysightDevice import KeysightDevice"""
-
 DISCLAIMER = '''"""
 This code is automatically generated from \'{}\'.
 Any changes made to this file are overwritten if you regenerate this module.
@@ -31,8 +23,13 @@ def generate_base_module(spec: dict) -> str:
     return generate_imports(spec) + '\n\n\n' + f"class {spec['name']}({spec['devicetype']}, {spec['superclass']}):"
 
 
+def get_default_imports() -> str:
+    with open('DEFAULT_IMPORTS.py', 'r') as f:
+        return f.read()
+
+
 def generate_imports(spec: dict) -> str:
-    return DEFAULT_IMPORTS + ('\n' + spec['imports'] if 'imports' in spec else '')
+    return get_default_imports() + ('\n' + spec['imports'] if 'imports' in spec else '')
 
 
 def generate_signature(method: dict) -> str:
@@ -79,7 +76,7 @@ def generate_docs(method: dict) -> str:
 
 def generate_method_head(method: dict) -> str:
     return f'def {method["name"]}({generate_signature(method)}) \\' \
-           f'\n        -> {method["return"]}:{indent(generate_docs(method))}{indent(generate_requirements(method))}' \
+           f'\n        -> {method["return"]}:{indent(generate_docs(method))}{indent(generate_requirements(method))}'
 
 
 def generate_requirements(method: dict) -> str:
