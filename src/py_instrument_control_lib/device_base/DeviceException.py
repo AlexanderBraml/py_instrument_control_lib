@@ -28,8 +28,10 @@ class DeviceException(Exception):
         self.params = params
 
     def __str__(self) -> str:
-        if self.msg:
+        if self.msg and self.error_code:
             return f'Device Error: {self.msg}, {self.error_code.value}'
+        elif self.msg:
+            return f'Device Error: {self.msg}'
         elif self.method and self.params:
             return f'Calling {self.method.__name__}{self.params} failed because: {self.error_code.value}'
         else:
