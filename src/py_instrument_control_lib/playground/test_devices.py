@@ -1,6 +1,7 @@
 import time
 
 from src.py_instrument_control_lib.device_base.DeviceConfigs import TCPDeviceConfig, SerialDeviceConfig
+from src.py_instrument_control_lib.device_types.FunctionGenerator import *
 from src.py_instrument_control_lib.device_types.Oscilloscope import *
 from src.py_instrument_control_lib.device_types.PowerSupply import *
 from src.py_instrument_control_lib.device_types.SMU import *
@@ -9,7 +10,6 @@ from src.py_instrument_control_lib.devices.KST3000 import KST3000
 from src.py_instrument_control_lib.devices.KST33500 import KST33500
 from src.py_instrument_control_lib.devices.SPD1305X import SPD1305X
 from src.py_instrument_control_lib.devices.SwitchMatrix import SwitchMatrix
-from src.py_instrument_control_lib.device_types.FunctionGenerator import *
 
 
 def test_smu() -> None:
@@ -61,13 +61,26 @@ def test_fg() -> None:
     fg.disconnect()
 
 
-def test_sm() -> None:
+def test_uart_sm() -> None:
     config = SerialDeviceConfig(interface='/dev/ttyUSB0')
+    matrix = UARTSwitchMatrix(config)
+    matrix.connect()
+
+    time.sleep(1)
+    matrix.set_row_col(1, 1)
+
+    matrix.disconnect()
+
+
+def test_eth_sm() -> None:
+    config = TCPDeviceConfig(ip='192.168.0.2', port=2000, timeout=2)
     matrix = SwitchMatrix(config)
     matrix.connect()
 
     time.sleep(1)
-    matrix.set_pair(1, 1)
+    matrix.set_row(4, True)
+    matrix.set_col(10, True)
+    matrix.set_row_col(1, 2, True)
 
     matrix.disconnect()
 
@@ -136,6 +149,7 @@ def test_osc() -> None:
 if __name__ == '__main__':
     # test_smu()
     # test_fg(config)
-    # test_sm()
+    # test_uart_sm()
+    test_eth_sm()
     # test_osc()
-    test_ps()
+    # test_ps()

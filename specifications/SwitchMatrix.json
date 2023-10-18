@@ -1,0 +1,28 @@
+{
+  "name": "SwitchMatrix",
+  "devicetype": "AbstractSwitchMatrix",
+  "superclass": "FloDevice",
+  "commands": [
+    {
+      "name": "set_row",
+      "type": "generated",
+      "signature": "row: int",
+      "requirements": "0 <= row <= 11",
+      "command": "f'{{\"cmd\": \"SET_ROW\", \"row\": \"{row}\"}}'"
+    },
+    {
+      "name": "set_col",
+      "type": "generated",
+      "signature": "col: int",
+      "requirements": "0 <= col <= 11",
+      "command": "f'{{\"cmd\": \"SET_COLUMN\", \"column\": \"{col}\"}}'"
+    },
+    {
+      "name": "set_row_col",
+      "type": "generated",
+      "signature": "row: int, col: int",
+      "requirements": "0 <= row <= 11 and 0 <= col <= 11",
+      "command": "f'{{\"cmd\": \"SET_ROW_COLUMN\", \"row\": \"{row}\", \"column\": \"{col}\"}}'"
+    }
+  ]
+}
