@@ -1,18 +1,21 @@
 """
-This code is automatically generated from '../specifications/KST33500.json'.
+This code is automatically generated from '../../../specifications/KST33500.json'.
 Any changes made to this file are overwritten if you regenerate this module.
 Only make changes in the source file.
 """
 
+from src.py_instrument_control_lib.device_base.TCPDevice import TCPDevice
+from src.py_instrument_control_lib.device_types.AbstractSwitchMatrix import AbstractSwitchMatrix
 from src.py_instrument_control_lib.device_types.FunctionGenerator import *
 from src.py_instrument_control_lib.device_types.Oscilloscope import *
 from src.py_instrument_control_lib.device_types.PowerSupply import *
 from src.py_instrument_control_lib.device_types.SMU import *
+from src.py_instrument_control_lib.manufacturers.FloDevice import FloDevice
 from src.py_instrument_control_lib.manufacturers.KeithleyDevice import KeithleyDevice
 from src.py_instrument_control_lib.manufacturers.KeysightDevice import KeysightDevice
-from src.py_instrument_control_lib.device_base.TCPDevice import TCPDevice
 
-_, _, _, _, _, _, _ = SMU, FunctionGenerator, PowerSupply, Oscilloscope, TCPDevice, KeysightDevice, KeithleyDevice
+_, _, _, _, _, _, _, _, _ = (SMU, FunctionGenerator, PowerSupply, Oscilloscope, TCPDevice,
+                             KeysightDevice, KeithleyDevice, AbstractSwitchMatrix, FloDevice)
 
 
 class KST33500(FunctionGenerator, KeysightDevice):
