@@ -1,15 +1,15 @@
 import time
 
-from device_base.DeviceConfigs import TCPDeviceConfig, SerialDeviceConfig
-from devices.KEI2600 import KEI2600
-from devices.KST3000 import KST3000
-from devices.KST33500 import KST33500
-from devices.SPD1305X import SPD1305X
-from devices.SwitchMatrix import SwitchMatrix
-from device_types.FunctionGenerator import *
-from device_types.Oscilloscope import *
-from device_types.PowerSupply import *
-from device_types.SMU import *
+from src.py_instrument_control_lib.device_base.DeviceConfigs import TCPDeviceConfig, SerialDeviceConfig
+from src.py_instrument_control_lib.device_types.Oscilloscope import *
+from src.py_instrument_control_lib.device_types.PowerSupply import *
+from src.py_instrument_control_lib.device_types.SMU import *
+from src.py_instrument_control_lib.devices.KEI2600 import KEI2600
+from src.py_instrument_control_lib.devices.KST3000 import KST3000
+from src.py_instrument_control_lib.devices.KST33500 import KST33500
+from src.py_instrument_control_lib.devices.SPD1305X import SPD1305X
+from src.py_instrument_control_lib.devices.SwitchMatrix import SwitchMatrix
+from src.py_instrument_control_lib.device_types.FunctionGenerator import *
 
 
 def test_smu() -> None:

@@ -1,0 +1,14 @@
+# pyproject.toml
+
+[build-system]
+requires = ["setuptools>=61.0.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "py-instrument-control-lib"
+version = "0.1"
+description = "Python Instrument Control Lib"
+authors = [{ name = "Alexander Braml", email = "braml@fim.uni-passau.de" },
+           { name = "Florian Frank", email = "florian.frank@uni-passau.de" }]
+dependencies = []
+requires-python = ">=3.7"

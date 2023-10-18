@@ -3,14 +3,13 @@ This code is automatically generated from '../specifications/KEI2600.json'.
 Any changes made to this file are overwritten if you regenerate this module.
 Only make changes in the source file.
 """
-
-from device_types.FunctionGenerator import *
-from device_types.Oscilloscope import *
-from device_types.PowerSupply import *
-from device_types.SMU import *
-from manufacturers.KeithleyDevice import KeithleyDevice
-from manufacturers.KeysightDevice import KeysightDevice
-from device_base.TCPDevice import TCPDevice
+from src.py_instrument_control_lib.device_types.FunctionGenerator import *
+from src.py_instrument_control_lib.device_types.Oscilloscope import *
+from src.py_instrument_control_lib.device_types.PowerSupply import *
+from src.py_instrument_control_lib.device_types.SMU import *
+from src.py_instrument_control_lib.manufacturers.KeithleyDevice import KeithleyDevice
+from src.py_instrument_control_lib.manufacturers.KeysightDevice import KeysightDevice
+from src.py_instrument_control_lib.device_base.TCPDevice import TCPDevice
 
 _, _, _, _, _, _, _ = SMU, FunctionGenerator, PowerSupply, Oscilloscope, TCPDevice, KeysightDevice, KeithleyDevice
 

@@ -1,7 +1,7 @@
 from abc import ABC
 from enum import Enum
 
-from devices.TCPDevice import TCPDevice
+from src.py_instrument_control_lib.device_base.Device import Device
 
 
 class PSChannel(Enum):
@@ -20,7 +20,7 @@ class PSMode(Enum):
     W4 = "4W"
 
 
-class PowerSupply(TCPDevice, ABC):
+class PowerSupply(Device, ABC):  # TODO: TCPDevice was here previously, mistake?
 
     def toggle(self, channel: PSChannel, enable: bool) -> None:
         pass

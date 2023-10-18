@@ -1,8 +1,8 @@
 import socket
 from abc import ABC, abstractmethod
 
-from device_base.Device import Device
-from device_base.DeviceConfigs import TCPDeviceConfig
+from src.py_instrument_control_lib.device_base.Device import Device
+from src.py_instrument_control_lib.device_base.DeviceConfigs import TCPDeviceConfig
 
 
 class TCPDevice(Device, ABC):

@@ -2,8 +2,8 @@ import time
 
 import serial
 
-from device_base import Device
-from device_base.DeviceConfigs import SerialDeviceConfig
+from src.py_instrument_control_lib.device_base import Device
+from src.py_instrument_control_lib.device_base.DeviceConfigs import SerialDeviceConfig
 
 
 class SwitchMatrix(Device):

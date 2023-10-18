@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from device_base.DeviceConfigs import DeviceConfig
+from src.py_instrument_control_lib.device_base.DeviceConfigs import DeviceConfig
 
 
 class Device(ABC):

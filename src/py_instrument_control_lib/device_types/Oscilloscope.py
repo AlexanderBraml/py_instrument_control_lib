@@ -1,7 +1,7 @@
 from abc import ABC
 from enum import Enum
 
-from device_base.Device import Device
+from src.py_instrument_control_lib.device_base.Device import Device
 
 
 class OscChannel(Enum):
