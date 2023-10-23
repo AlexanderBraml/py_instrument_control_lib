@@ -1,8 +1,8 @@
 import os
 
-from src.py_instrument_control_lib.device_generation.generate_module import generate_module
+from py_instrument_control_lib.device_generation.generate_module import generate_module
 
-source_dir = '../../../specifications'
+source_dir = '../../specifications'
 gen_dir = '../devices'
 
 specs = []

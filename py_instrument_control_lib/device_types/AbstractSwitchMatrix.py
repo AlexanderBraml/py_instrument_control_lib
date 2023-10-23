@@ -1,6 +1,6 @@
 from abc import ABC
 
-from src.py_instrument_control_lib.device_base.Device import Device
+from py_instrument_control_lib.device_base.Device import Device
 
 
 class AbstractSwitchMatrix(Device, ABC):

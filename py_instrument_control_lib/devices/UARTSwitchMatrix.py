@@ -2,8 +2,8 @@ import time
 
 import serial
 
-from src.py_instrument_control_lib.device_base import Device
-from src.py_instrument_control_lib.device_base.DeviceConfigs import SerialDeviceConfig
+from py_instrument_control_lib.device_base import Device
+from py_instrument_control_lib.device_base.DeviceConfigs import SerialDeviceConfig
 
 
 class UARTSwitchMatrix(Device):

@@ -1,6 +1,6 @@
 from abc import ABC
 
-from src.py_instrument_control_lib.device_base.TCPDevice import TCPDevice
+from py_instrument_control_lib.device_base.TCPDevice import TCPDevice
 
 
 class KeysightDevice(TCPDevice, ABC):

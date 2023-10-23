@@ -1,7 +1,7 @@
 from abc import ABC
 
-from src.py_instrument_control_lib.device_base.DeviceException import DeviceException, ErrorCode
-from src.py_instrument_control_lib.device_base.TCPDevice import TCPDevice
+from py_instrument_control_lib.device_base.DeviceException import DeviceException, ErrorCode
+from py_instrument_control_lib.device_base.TCPDevice import TCPDevice
 
 
 class KeithleyDevice(TCPDevice, ABC):

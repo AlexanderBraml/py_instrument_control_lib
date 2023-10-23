@@ -1,5 +1,5 @@
-from src.py_instrument_control_lib.device_types.SMU import SMU, SMUChannel, Unit, SMUMode
-from src.py_instrument_control_lib.devices import TCPDevice
+from py_instrument_control_lib.device_types.SMU import SMU, SMUChannel, Unit, SMUMode
+from py_instrument_control_lib.devices import TCPDevice
 
 
 class KEI2600Handwritten(SMU, TCPDevice):
