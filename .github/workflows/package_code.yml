@@ -24,8 +24,11 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Create Build Environment
-        run: cmake -E make_directory ${{runner.workspace}}/build
-
-      - name: LS
+      - name: ls
         run: ls ${{runner.workspace}}
+
+      - name: cd
+        run: ls ${{runner.workspace}}
+
+      - name: ls 2
+        run: ls
