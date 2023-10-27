@@ -1,0 +1,45 @@
+name: ubuntu_latest
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    name: ${{ matrix.config.name }}
+    runs-on: ${{ matrix.config.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        config:
+        - {
+            name: "Ubuntu_Latest",
+            os: ubuntu-latest
+          }
+
+    steps:
+      - name: Checkout Repository and Submodules
+        uses: actions/checkout@v3
+        with:
+          submodules: recursive
+
+      - name: Create tmp branch
+        run: git branch tmp
+
+      - name: Switch to tmp branch
+        run: git switch tmp
+
+      - name: Move module into root
+        run: mv py_instrument_control_lib/* .
+
+      - name: Delete unneeded files
+        run: rm -r pyproject.toml specifications py_instrument_control_lib
+
+      - name: status
+        run: git status
+
+      - uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: Move module into root directory
+          push_options: '--force tmp:package_submodule'
