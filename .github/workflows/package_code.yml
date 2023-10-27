@@ -33,11 +33,31 @@ jobs:
       - name: ls
         run: ls
 
-      - name: Add changes
-        run: git add .
+      - uses: EndBug/add-and-commit@v9 # You can change this to use a specific version.
+        with:
+          # Determines the way the action fills missing author name and email. Three options are available:
+          # - github_actor -> UserName <UserName@users.noreply.github.com>
+          # - user_info -> Your Display Name <your-actual@email.com>
+          # - github_actions -> github-actions <email associated with the github logo>
+          # Default: github_actor
+          default_author: github_actor
 
-      - name: Commit changes
-        run: git commit -m "Move module into root directory"
+          # Arguments for the git fetch command. If set to false, the action won't fetch the repo.
+          # For more info as to why fetching is usually recommended, please see the "Performance on large repos" FAQ.
+          # Default: --tags --force
+          fetch: false
 
-      - name: Push changes
-        run: git push --force origin main:package_submodule
+          # The message for the commit.
+          # Default: 'Commit from GitHub Actions (name of the workflow)'
+          message: 'Move module into root directory'
+
+          # The way the action should handle pathspec errors from the add and remove commands. Three options are available:
+          # - ignore -> errors will be logged but the step won't fail
+          # - exitImmediately -> the action will stop right away, and the step will fail
+          # - exitAtEnd -> the action will go on, every pathspec error will be logged at the end, the step will fail.
+          # Default: ignore
+          pathspec_error_handling: exitImmediately
+
+          # Whether to push the commit and, if any, its tags to the repo. It can also be used to set the git push arguments (see the paragraph below for more info)
+          # Default: true
+          push: --force origin main:package_submodule
