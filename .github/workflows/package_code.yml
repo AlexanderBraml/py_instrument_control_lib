@@ -24,6 +24,12 @@ jobs:
         with:
           submodules: recursive
 
+      - name: Create tmp branch
+        run: git branch tmp
+
+      - name: Switch to tmp branch
+        run: git switch tmp
+
       - name: Move module into root
         run: mv py_instrument_control_lib/* .
 
@@ -60,4 +66,4 @@ jobs:
 
           # Whether to push the commit and, if any, its tags to the repo. It can also be used to set the git push arguments (see the paragraph below for more info)
           # Default: true
-          push: origin package_submodule --force --set-upstream
+          push: --force origin tmp:package_submodule
