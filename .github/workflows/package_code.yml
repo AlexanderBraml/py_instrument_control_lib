@@ -32,3 +32,12 @@ jobs:
 
       - name: ls
         run: ls
+
+      - name: Add changes
+        run: git add .
+
+      - name: Commit changes
+        run: git commit -m "Move module into root directory"
+
+      - name: Push changes
+        run: git push --force origin main:package_submodule
