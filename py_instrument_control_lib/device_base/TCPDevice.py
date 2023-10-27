@@ -10,6 +10,8 @@ class TCPDevice(Device, ABC):
 
     def __init__(self, config: TCPDeviceConfig) -> None:
         super().__init__(config)
+        if config.timeout <= 0:
+            raise ValueError('Invalid timeout. Timeout needs to be >= 1!')
         self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
     def connect(self) -> None:
