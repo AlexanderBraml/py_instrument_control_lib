@@ -2,7 +2,7 @@ import time
 
 import serial
 
-from py_instrument_control_lib.device_base import Device
+from py_instrument_control_lib.device_base.Device import Device
 from py_instrument_control_lib.device_base.DeviceConfigs import SerialDeviceConfig
 
 
