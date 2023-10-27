@@ -24,11 +24,11 @@ jobs:
         with:
           submodules: recursive
 
+      - name: Move module into root
+        run: mv py_instrument_control_lib/* .
+
+      - name: Delete unneeded files
+        run: rm -r pyproject.toml specifications py_instrument_control_lib
+
       - name: ls
-        run: ls ${{runner.workspace}}
-
-      - name: cd
-        run: ls ${{runner.workspace}}
-
-      - name: ls 2
         run: ls
