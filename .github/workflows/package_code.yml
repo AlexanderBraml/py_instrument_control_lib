@@ -34,7 +34,7 @@ jobs:
         run: mv py_instrument_control_lib/* .
 
       - name: Delete unneeded files
-        run: rm -r pyproject.toml specifications py_instrument_control_lib
+        run: rm -r pyproject.toml specifications py_instrument_control_lib playground .gitignore .idea .github
 
       - name: status
         run: git status
