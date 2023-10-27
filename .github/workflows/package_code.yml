@@ -60,4 +60,4 @@ jobs:
 
           # Whether to push the commit and, if any, its tags to the repo. It can also be used to set the git push arguments (see the paragraph below for more info)
           # Default: true
-          push: --force origin main:package_submodule
+          push: origin main:package_submodule --force --set-upstream
