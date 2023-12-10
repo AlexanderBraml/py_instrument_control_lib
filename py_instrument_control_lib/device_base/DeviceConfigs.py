@@ -19,3 +19,4 @@ class SerialDeviceConfig(DeviceConfig):
     interface: str
     baud_rate: int = 9600
     timeout: int = 2
+    number_of_connection_attempts: int = 3

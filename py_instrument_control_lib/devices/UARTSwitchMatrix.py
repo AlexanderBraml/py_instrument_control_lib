@@ -2,11 +2,12 @@ import time
 
 import serial
 
-from py_instrument_control_lib.device_base.Device import Device
 from py_instrument_control_lib.device_base.DeviceConfigs import SerialDeviceConfig
+from py_instrument_control_lib.device_types.AbstractSwitchMatrix import AbstractSwitchMatrix
 
 
-class UARTSwitchMatrix(Device):
+class UARTSwitchMatrix(AbstractSwitchMatrix):
+    _config: SerialDeviceConfig
 
     def __init__(self, config: SerialDeviceConfig):
         super().__init__(config)
@@ -16,6 +17,24 @@ class UARTSwitchMatrix(Device):
         self.serial_port.flush()
         self.__connect_to_arduino()
 
+    def set_row(self, row):
+        """
+        Sends r: <row idx> to the Arduino nano
+        Args:
+            row: row to set valid values are 0 - 12. 12 means no row is selected.
+        """
+        self.execute(f'r: {row}\n')
+        return self.__wait_for_response()
+
+    def set_col(self, col):
+        """
+         Sends c: <column idx> to the Arduino nano
+         Args:
+             col: column to set valid values are 0 - 12. 12 means no column is selected.
+         """
+        self.execute(f'c: {col}\n')
+        return self.__wait_for_response()
+
     def set_row_col(self, row: int, col: int) -> None:
         """
         Send r: <row idx> and c: <col idx> to the Arduino nano
@@ -24,53 +43,29 @@ class UARTSwitchMatrix(Device):
             :param col: column to set, valid values are 0 - 12
         """
         self.set_row(row)
-        self.set_column(col)
+        self.set_col(col)
 
-    def set_row(self, row_idx, timeout_in_secs=2):
-        """
-        Sends r: <row idx> to the Arduino nano
-        Args:
-            row_idx: row to set valid values are 0 - 12. 12 means no row is selected.
-            timeout_in_secs: Timeout in seconds to wait for the acknowledgement.
-        """
-        self.execute(f'r: {row_idx}\n')
-        return self.__wait_for_response(timeout_in_secs)
-
-    def set_column(self, column_idx, timeout_in_secs=2):
-        """
-         Sends c: <column idx> to the Arduino nano
-         Args:
-             column_idx: column to set valid values are 0 - 12. 12 means no column is selected.
-             timeout_in_secs: Timeout in seconds to wait for the acknowledgement.
-         """
-        self.execute(f'c: {column_idx}\n')
-        return self.__wait_for_response(timeout_in_secs)
-
-    def __connect_to_arduino(self, number_of_attempts=3):
+    def __connect_to_arduino(self):
         """
         Sends a connection request to the Arduino Nano as long as the connection is established.
-        Args:
-            :param number_of_attempts
         """
-        for i in range(number_of_attempts):
+        for i in range(self._config.number_of_connection_attempts):
             if self.__send_connect_message():
                 return True
         else:
             print("Timeout when trying to connect")
 
-    def __send_connect_message(self, timeout_in_secs=2):
+    def __send_connect_message(self):
         """
         Sends the connect message to the Arduino Nano.
-        Args:
-            timeout_in_secs: Timeout in seconds to wait for the acknowledgement.
         """
         self.execute('connect\n')
-        return self.__wait_for_response(timeout_in_secs)
+        return self.__wait_for_response()
 
-    def __wait_for_response(self, timeout_in_secs):
+    def __wait_for_response(self):
         time.sleep(0.4)
         start_ts = time.time()
-        while time.time() < start_ts + timeout_in_secs:
+        while time.time() < start_ts + self._config.timeout:
             ack = self.serial_port.readline()
             ack = ack.decode('ascii')
             if 'ack' in ack:
@@ -90,12 +85,10 @@ class UARTSwitchMatrix(Device):
     def disconnect(self) -> None:
         self.__send_disconnect_message()
 
-    def __send_disconnect_message(self, timeout_in_secs=2):
+    def __send_disconnect_message(self):
         """
         Sends the disconnect message to the Arduino Nano.
-        Args:
-            timeout_in_secs: Timeout in seconds to wait for the acknowledgement.
         """
         self.execute('disconnect\n')
-        self.__wait_for_response(timeout_in_secs)
+        self.__wait_for_response()
         self.serial_port.close()
