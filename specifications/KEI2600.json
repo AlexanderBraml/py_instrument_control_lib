@@ -2,7 +2,21 @@
   "name": "KEI2600",
   "devicetype": "SMU",
   "superclass": "KeithleyDevice",
+  "imports": "import requests\nfrom py_instrument_control_lib.device_base.DeviceException import DeviceException\nimport time\nimport copy\nfrom typing import Optional",
   "commands": [
+    {
+      "name": "execute",
+      "type": "code",
+      "signature": "command: str",
+      "code": "if self._buffering_enabled:\n    self._buffered_script.append(command)\nelse:\n    super().execute(command)"
+    },
+    {
+      "name": "query",
+      "type": "code",
+      "signature": "query: str",
+      "return": "Optional[str]",
+      "code": "if self._buffering_enabled:\n    buffer_name = 'A_M_BUFFER' if query.startswith('smua') else 'B_M_BUFFER'\n    query = query[:-1] + buffer_name + ')'\n    self._buffered_script.append(query)\n    return \"inf\"\nelse:\n    command = 'reading = ' + query\n    self.execute(command)\n    self.execute('print(reading)')\n    response = self._socket.recv(1024)\n    response_decoded = response.decode()\n    if 'TSP>' in response_decoded:\n        raise DeviceException(msg='Do not use the web interface before or during use of this control lib! '\n                                  'You have to restart your device in order to continue.')\n    return response_decoded"
+    },
     {
       "name": "measure",
       "docs": "This function measures a certain unit on a specific channel. Can be used to measure voltage, current, power or resistance.\n:param unit: The thing to measure.\n:param channel: The channel to measure on.\n:param check_errors: Whether to check the error buffer after the execution.\n:return: None.",
@@ -125,6 +139,59 @@
       "docs": "Send a beeping sound with a specific duration and frequency to the SMU.\n:param duration: Time in seconds to play the beeping sound.\n:param frequency: Frequency in HZ of the sound to play.\n:param check_errors: Whether to check the error buffer after the execution.\n:return: None.",
       "signature": "duration: float, frequency: int",
       "command": "f'beeper.beep({duration}, {frequency})'"
+    },
+    {
+      "name": "toggle_buffering",
+      "type": "code",
+      "signature": "enable: bool",
+      "code": "self._buffering_enabled = enable\nif not hasattr(self, '_buffered_script'):\n    self._buffered_script = []"
+    },
+    {
+      "name": "execute_buffered_script",
+      "type": "code",
+      "signature": "blocking: bool = True",
+      "code": "self.toggle_buffering(False)\n\nbuffer_entries_a = len([line for line in self._buffered_script if 'A_M_BUFFER' in line])\nbuffer_entries_b = len([line for line in self._buffered_script if 'B_M_BUFFER' in line])\ndefault_script = [\"loadscript pyBuff\",\n                  f'A_M_BUFFER = smua.makebuffer({buffer_entries_a})',\n                  f'B_M_BUFFER = smub.makebuffer({buffer_entries_b})',\n                  'A_M_BUFFER.appendmode = 1',\n                  'B_M_BUFFER.appendmode = 1']\nself._buffered_script = default_script + self._buffered_script\nself._buffered_script.append('endscript')\n\nexit_payload: dict = {'command': 'keyInput', 'value': 'K'}\npayloads: list[dict] = []\n\nn = 32\nchunks = [self._buffered_script[i:i + n] for i in range(0, len(self._buffered_script), n)]\n\npayloads += [self.__make_payload('\\n'.join(chunk)) for chunk in chunks]\npayloads += [self.__make_payload('pyBuff.save()'), exit_payload]\n\nfor payload in payloads:\n    response = requests.post('http://' + self._config.ip + '/HttpCommand', json=payload)\n    if response.status_code != 200:\n        raise DeviceException(msg='Failed to send and execute buffered script')\n    time.sleep(0.5)\n\nself.execute('pyBuff()')\n\nprint('Waiting for script to complete')\nif blocking:\n    status = requests.post('http://' + self._config.ip + '/HttpCommand', json={\n        \"command\": \"shellOutput\",\n        \"timeout\": 3,\n        \"acceptsMultiple\": True\n    })\n    while status.json()['status']['value'] == 'timeout':\n        status = requests.post('http://' + self._config.ip + '/HttpCommand', json={\n            \"command\": \"shellOutput\",\n            \"timeout\": 3,\n            \"acceptsMultiple\": True\n        })\n    print('Script finished')"
+    },
+    {
+      "name": "__make_payload",
+      "type": "code",
+      "return": "dict",
+      "signature": "value: str",
+      "code": "return {'command': 'shellInput', 'value': value}"
+    },
+    {
+      "name": "read_buffer",
+      "type": "code",
+      "signature": "",
+      "code": "buffer_a = self.__read_channel_buffer(SMUChannel.CHANNEL_A)\nbuffer_b = self.__read_channel_buffer(SMUChannel.CHANNEL_B)\nself._buffer = (buffer_a, buffer_b)"
+    },
+    {
+      "name": "__read_channel_buffer",
+      "type": "code",
+      "signature": "channel: SMUChannel",
+      "return": "list[str]",
+      "code": "buffer_name = ('A' if channel == SMUChannel.CHANNEL_A else 'B') + '_M_BUFFER'\nbuffer_size = len([line for line in self._buffered_script if buffer_name in line]) - 2\nbatch_size = 1024 // 15\n\nbuffer = []\noffset = 1\nwhile offset + batch_size <= buffer_size:\n    buffer += self.__get_buffer_content(offset, batch_size, buffer_name)\n    offset += batch_size\n\nif (remaining := buffer_size % batch_size) > 0:\n    buffer += self.__get_buffer_content(offset, remaining, buffer_name)\n\nreturn buffer"
+    },
+    {
+      "name": "get_buffer",
+      "type": "code",
+      "signature": "",
+      "return": "tuple[list[str], list[str]]",
+      "code": "return copy.deepcopy(self._buffer)"
+    },
+    {
+      "name": "__get_buffer_content",
+      "type": "code",
+      "signature": "offset: int, batch_size: int, buffer_name: str",
+      "return": "list[str]",
+      "code": "print_query = f'printbuffer({offset}, {offset + batch_size - 1}, {buffer_name})'\nself.execute(print_query)\nreturn self._socket.recv(1024).decode().replace('\\n', '').split(', ')"
+    },
+    {
+      "name": "next_buffer_element",
+      "type": "code",
+      "signature": "channel: SMUChannel",
+      "return": "float",
+      "code": "if len(self._buffer) == 0:\n    raise Exception('Buffer is empty!')\nbuffer_idx = 0 if channel == SMUChannel.CHANNEL_A else 1\nreturn float(self._buffer[buffer_idx].pop(0))"
     }
   ]
 }

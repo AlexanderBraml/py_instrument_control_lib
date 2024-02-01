@@ -1,5 +1,5 @@
 """
-This code is automatically generated from '../../../specifications/SPD1305X.json'.
+This code is automatically generated from '../../specifications/SPD1305X.json'.
 Any changes made to this file are overwritten if you regenerate this module.
 Only make changes in the source file.
 """
