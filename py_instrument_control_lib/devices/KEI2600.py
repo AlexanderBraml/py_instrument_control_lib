@@ -1,5 +1,5 @@
 """
-This code is automatically generated from '../../../specifications/KEI2600.json'.
+This code is automatically generated from '../../specifications/KEI2600.json'.
 Any changes made to this file are overwritten if you regenerate this module.
 Only make changes in the source file.
 """
@@ -16,10 +16,40 @@ from py_instrument_control_lib.manufacturers.KeysightDevice import KeysightDevic
 
 _, _, _, _, _, _, _, _, _ = (SMU, FunctionGenerator, PowerSupply, Oscilloscope, TCPDevice,
                              KeysightDevice, KeithleyDevice, AbstractSwitchMatrix, FloDevice)
+import requests
+from py_instrument_control_lib.device_base.DeviceException import DeviceException
+import time
+import copy
+from typing import Optional
 
 
 class KEI2600(SMU, KeithleyDevice):
 
+    def execute(self, command: str, check_errors: bool = False) \
+            -> None:        
+        if self._buffering_enabled:
+            self._buffered_script.append(command)
+        else:
+            super().execute(command)
+    
+    def query(self, query: str, check_errors: bool = False) \
+            -> Optional[str]:        
+        if self._buffering_enabled:
+            buffer_name = 'A_M_BUFFER' if query.startswith('smua') else 'B_M_BUFFER'
+            query = query[:-1] + buffer_name + ')'
+            self._buffered_script.append(query)
+            return "inf"
+        else:
+            command = 'reading = ' + query
+            self.execute(command)
+            self.execute('print(reading)')
+            response = self._socket.recv(1024)
+            response_decoded = response.decode()
+            if 'TSP>' in response_decoded:
+                raise DeviceException(msg='Do not use the web interface before or during use of this control lib! '
+                                          'You have to restart your device in order to continue.')
+            return response_decoded
+    
     def measure(self, unit: Unit, channel: SMUChannel, check_errors: bool = False) \
             -> float:    
         """
@@ -166,3 +196,97 @@ class KEI2600(SMU, KeithleyDevice):
         self.execute(f'beeper.beep({duration}, {frequency})')
         if check_errors:
             self.check_error_buffer()
+    
+    def toggle_buffering(self, enable: bool, check_errors: bool = False) \
+            -> None:        
+        self._buffering_enabled = enable
+        if not hasattr(self, '_buffered_script'):
+            self._buffered_script = []
+    
+    def execute_buffered_script(self, blocking: bool = True, check_errors: bool = False) \
+            -> None:        
+        self.toggle_buffering(False)
+        
+        buffer_entries_a = len([line for line in self._buffered_script if 'A_M_BUFFER' in line])
+        buffer_entries_b = len([line for line in self._buffered_script if 'B_M_BUFFER' in line])
+        default_script = ["loadscript pyBuff",
+                          f'A_M_BUFFER = smua.makebuffer({buffer_entries_a})',
+                          f'B_M_BUFFER = smub.makebuffer({buffer_entries_b})',
+                          'A_M_BUFFER.appendmode = 1',
+                          'B_M_BUFFER.appendmode = 1']
+        self._buffered_script = default_script + self._buffered_script
+        self._buffered_script.append('endscript')
+        
+        exit_payload: dict = {'command': 'keyInput', 'value': 'K'}
+        payloads: list[dict] = []
+        
+        n = 32
+        chunks = [self._buffered_script[i:i + n] for i in range(0, len(self._buffered_script), n)]
+        
+        payloads += [self.__make_payload('\n'.join(chunk)) for chunk in chunks]
+        payloads += [self.__make_payload('pyBuff.save()'), exit_payload]
+        
+        for payload in payloads:
+            response = requests.post('http://' + self._config.ip + '/HttpCommand', json=payload)
+            if response.status_code != 200:
+                raise DeviceException(msg='Failed to send and execute buffered script')
+            time.sleep(0.5)
+        
+        self.execute('pyBuff()')
+        
+        print('Waiting for script to complete')
+        if blocking:
+            status = requests.post('http://' + self._config.ip + '/HttpCommand', json={
+                "command": "shellOutput",
+                "timeout": 3,
+                "acceptsMultiple": True
+            })
+            while status.json()['status']['value'] == 'timeout':
+                status = requests.post('http://' + self._config.ip + '/HttpCommand', json={
+                    "command": "shellOutput",
+                    "timeout": 3,
+                    "acceptsMultiple": True
+                })
+            print('Script finished')
+    
+    def __make_payload(self, value: str, check_errors: bool = False) \
+            -> dict:        
+        return {'command': 'shellInput', 'value': value}
+    
+    def read_buffer(self, check_errors: bool = False) \
+            -> None:        
+        buffer_a = self.__read_channel_buffer(SMUChannel.CHANNEL_A)
+        buffer_b = self.__read_channel_buffer(SMUChannel.CHANNEL_B)
+        self._buffer = (buffer_a, buffer_b)
+    
+    def __read_channel_buffer(self, channel: SMUChannel, check_errors: bool = False) \
+            -> list[str]:        
+        buffer_name = ('A' if channel == SMUChannel.CHANNEL_A else 'B') + '_M_BUFFER'
+        buffer_size = len([line for line in self._buffered_script if buffer_name in line]) - 2
+        batch_size = 1024 // 15
+        
+        buffer = []
+        offset = 1
+        while offset + batch_size <= buffer_size:
+            buffer += self.__get_buffer_content(offset, batch_size, buffer_name)
+            offset += batch_size
+        
+        if (remaining := buffer_size % batch_size) > 0:
+            buffer += self.__get_buffer_content(offset, remaining, buffer_name)
+        
+        return buffer
+    
+    def get_buffer(self, check_errors: bool = False) \
+            -> tuple[list[str], list[str]]:        
+        return copy.deepcopy(self._buffer)
+    
+    def __get_buffer_content(self, offset: int, batch_size: int, buffer_name: str, check_errors: bool = False) \
+            -> list[str]:        
+        print_query = f'printbuffer({offset}, {offset + batch_size - 1}, {buffer_name})'
+        self.execute(print_query)
+        return self._socket.recv(1024).decode().replace('\n', '').split(', ')
+    
+    def next_buffer_element(self, channel: SMUChannel, check_errors: bool = False) \
+            -> float:        
+        buffer_idx = 0 if channel == SMUChannel.CHANNEL_A else 1
+        return float(self._buffer[buffer_idx].pop(0))
