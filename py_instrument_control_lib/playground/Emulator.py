@@ -1,7 +1,8 @@
 import socket
+import sys
 
-host = ''
-port = 5025
+host = sys.argv[1]
+port = int(sys.argv[2])
 
 if __name__ == '__main__':
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
