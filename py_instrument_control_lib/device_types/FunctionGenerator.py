@@ -5,8 +5,8 @@ from py_instrument_control_lib.device_base.Device import Device
 
 
 class FuncChannel(Enum):
-    CHANNEL_A = ""
-    CHANNEL_B = ""
+    CHANNEL_A = "A"
+    CHANNEL_B = "B"
 
 
 class FGUnit(Enum):
