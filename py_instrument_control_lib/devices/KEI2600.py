@@ -288,5 +288,7 @@ class KEI2600(SMU, KeithleyDevice):
     
     def next_buffer_element(self, channel: SMUChannel, check_errors: bool = False) \
             -> float:        
+        if len(self._buffer) == 0:
+            raise Exception('Buffer is empty!')
         buffer_idx = 0 if channel == SMUChannel.CHANNEL_A else 1
         return float(self._buffer[buffer_idx].pop(0))

@@ -191,7 +191,7 @@
       "type": "code",
       "signature": "channel: SMUChannel",
       "return": "float",
-      "code": "buffer_idx = 0 if channel == SMUChannel.CHANNEL_A else 1\nreturn float(self._buffer[buffer_idx].pop(0))"
+      "code": "if len(self._buffer) == 0:\n    raise Exception('Buffer is empty!')\nbuffer_idx = 0 if channel == SMUChannel.CHANNEL_A else 1\nreturn float(self._buffer[buffer_idx].pop(0))"
     }
   ]
 }
