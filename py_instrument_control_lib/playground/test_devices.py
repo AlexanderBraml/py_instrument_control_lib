@@ -10,6 +10,7 @@ from py_instrument_control_lib.devices.KST3000 import KST3000
 from py_instrument_control_lib.devices.KST33500 import KST33500
 from py_instrument_control_lib.devices.SPD1305X import SPD1305X
 from py_instrument_control_lib.devices.SwitchMatrix import SwitchMatrix
+from py_instrument_control_lib.devices.UARTSwitchMatrix import UARTSwitchMatrix
 
 
 def test_smu() -> None:
@@ -17,27 +18,27 @@ def test_smu() -> None:
     smu: SMU = KEI2600(config)
     smu.connect()
 
-    print(smu.measure(Unit.VOLTAGE, SMUChannel.CHANNEL_A))
-    print(smu.measure(Unit.CURRENT, SMUChannel.CHANNEL_A))
-    print(smu.measure(Unit.POWER, SMUChannel.CHANNEL_A))
-    print(smu.measure(Unit.RESISTANCE, SMUChannel.CHANNEL_A))
+    print(smu.measure(ChannelUnit.VOLTAGE, ChannelIndex(1)))
+    print(smu.measure(ChannelUnit.CURRENT, ChannelIndex(1)))
+    print(smu.measure(ChannelUnit.POWER, ChannelIndex(1)))
+    print(smu.measure(ChannelUnit.RESISTANCE, ChannelIndex(1)))
 
-    smu.toggle_channel(SMUChannel.CHANNEL_A, True)
-    smu.set_level(Unit.VOLTAGE, SMUChannel.CHANNEL_A, 0.42)
-    smu.set_limit(Unit.VOLTAGE, SMUChannel.CHANNEL_A, 0.69)
-    smu.toggle_autorange(Unit.VOLTAGE, SMUChannel.CHANNEL_A, SMUMode.MEASURE, False)
-    smu.toggle_measure_analog_filter(SMUChannel.CHANNEL_A, False)
-    smu.set_range(Unit.VOLTAGE, SMUChannel.CHANNEL_A, SMUMode.MEASURE, 1.0)
-    smu.set_sense_mode(SMUChannel.CHANNEL_A, SMUSense.LOCAL)
-    smu.set_measure_plc(SMUChannel.CHANNEL_A, 1.0)
-    smu.set_measure_low_range(Unit.VOLTAGE, SMUChannel.CHANNEL_A, 1.0)
-    smu.set_measure_auto_zero(SMUChannel.CHANNEL_A, Autozero.AUTO)
-    smu.set_measure_count(SMUChannel.CHANNEL_A, 10)
-    smu.set_source_function(SMUChannel.CHANNEL_A, SourceFunction.DC_VOLTS)
-    smu.set_source_off_mode(SMUChannel.CHANNEL_A, SourceOffMode.OUTPUT_ZERO)
-    smu.set_source_settling(SMUChannel.CHANNEL_A, SourceSettling.SMOOTH)
-    smu.toggle_source_sink(SMUChannel.CHANNEL_A, True)
-    smu.display_measure_function(SMUChannel.CHANNEL_A, SMUDisplay.MEASURE_DC_VOLTS)
+    smu.toggle_channel(ChannelIndex(1), True)
+    smu.set_level(ChannelUnit.VOLTAGE, ChannelIndex(1), 0.42)
+    smu.set_limit(ChannelUnit.VOLTAGE, ChannelIndex(1), 0.69)
+    smu.toggle_autorange(ChannelUnit.VOLTAGE, ChannelIndex(1), SMUMode.MEASURE, False)
+    smu.toggle_measure_analog_filter(ChannelIndex(1), False)
+    smu.set_range(ChannelUnit.VOLTAGE, ChannelIndex(1), SMUMode.MEASURE, 1.0)
+    smu.set_sense_mode(ChannelIndex(1), SMUSense.LOCAL)
+    smu.set_measure_plc(ChannelIndex(1), 1.0)
+    smu.set_measure_low_range(ChannelUnit.VOLTAGE, ChannelIndex(1), 1.0)
+    smu.set_measure_auto_zero(ChannelIndex(1), Autozero.AUTO)
+    smu.set_measure_count(ChannelIndex(1), 10)
+    smu.set_source_function(ChannelIndex(1), SourceFunction.DC_VOLTS)
+    smu.set_source_off_mode(ChannelIndex(1), SourceOffMode.OUTPUT_ZERO)
+    smu.set_source_settling(ChannelIndex(1), SourceSettling.SMOOTH)
+    smu.toggle_source_sink(ChannelIndex(1), True)
+    smu.display_measure_function(ChannelIndex(1), SMUDisplay.MEASURE_DC_VOLTS)
     smu.toggle_beep(True)
     smu.beep(0.3, 1000)
 
