@@ -58,6 +58,25 @@
       "type": "generated",
       "signature": "pulsewidth: float",
       "command": "f'FUNCtion:PULSe:WIDTh {pulsewidth} ms'"
+    },
+    {
+      "name": "get_channel",
+      "type": "code",
+      "signature": "channel_idx: ChannelIndex",
+      "return": "SourceChannel",
+      "code": "channel_idx.check(2)\nreturn SourceChannel(self, channel_idx, [ChannelUnit.VOLTAGE])"
+    },
+    {
+      "name": "toggle_channel",
+      "type": "code",
+      "signature": "channel_idx: ChannelIndex, enable: bool",
+      "code": "channel_idx.check(2)\nself.toggle(enable)"
+    },
+    {
+      "name": "set_channel_level",
+        "type": "code",
+        "signature": "unit: ChannelUnit, channel_idx: ChannelIndex, level: float",
+        "code": "channel_idx.check(2)\nself.execute(f'VOLTage:OFFSet {level * 2}')  # TODO: Find proper way to set voltage level"
     }
   ]
 }
