@@ -92,4 +92,4 @@ class KST33500(FunctionGenerator, KeysightDevice):
     def set_channel_level(self, unit: ChannelUnit, channel_idx: ChannelIndex, level: float, check_errors: bool = False) \
             -> None:        
         channel_idx.check(2)
-        self.execute(f'VOLTage:OFFSet {level * 2}')  # TODO: Find proper way to set voltage level
+        self.execute(f'VOLTage:OFFSet {level / 2}')  # TODO: Find proper way to set voltage level
