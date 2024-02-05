@@ -4,6 +4,8 @@ Any changes made to this file are overwritten if you regenerate this module.
 Only make changes in the source file.
 """
 
+from py_instrument_control_lib.channels.ChannelEnums import ChannelIndex, ChannelUnit
+from py_instrument_control_lib.channels.Channel import SourceChannel, MeasureChannel, SourceMeasureChannel
 from py_instrument_control_lib.device_base.TCPDevice import TCPDevice
 from py_instrument_control_lib.device_types.AbstractSwitchMatrix import AbstractSwitchMatrix
 from py_instrument_control_lib.device_types.FunctionGenerator import *
@@ -76,3 +78,18 @@ class KST33500(FunctionGenerator, KeysightDevice):
         self.execute(f'FUNCtion:PULSe:WIDTh {pulsewidth} ms')
         if check_errors:
             self.check_error_buffer()
+    
+    def get_channel(self, channel_idx: ChannelIndex, check_errors: bool = False) \
+            -> SourceChannel:        
+        channel_idx.check(2)
+        return SourceChannel(self, channel_idx, [ChannelUnit.VOLTAGE])
+    
+    def toggle_channel(self, channel_idx: ChannelIndex, enable: bool, check_errors: bool = False) \
+            -> None:        
+        channel_idx.check(2)
+        self.toggle(enable)
+    
+    def set_channel_level(self, unit: ChannelUnit, channel_idx: ChannelIndex, level: float, check_errors: bool = False) \
+            -> None:        
+        channel_idx.check(2)
+        self.execute(f'VOLTage:OFFSet {level * 2}')  # TODO: Find proper way to set voltage level

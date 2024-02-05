@@ -1,3 +1,5 @@
+from py_instrument_control_lib.channels.ChannelEnums import ChannelIndex, ChannelUnit
+from py_instrument_control_lib.channels.Channel import SourceChannel, MeasureChannel, SourceMeasureChannel
 from py_instrument_control_lib.device_base.TCPDevice import TCPDevice
 from py_instrument_control_lib.device_types.AbstractSwitchMatrix import AbstractSwitchMatrix
 from py_instrument_control_lib.device_types.FunctionGenerator import *

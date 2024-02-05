@@ -8,124 +8,131 @@
       "name": "execute",
       "type": "code",
       "signature": "command: str",
-      "code": "if self._buffering_enabled:\n    self._buffered_script.append(command)\nelse:\n    super().execute(command)"
+      "code": "if hasattr(self, '_buffering_enabled') and self._buffering_enabled:\n    self._buffered_script.append(command)\nelse:\n    super().execute(command)"
     },
     {
       "name": "query",
       "type": "code",
       "signature": "query: str",
       "return": "Optional[str]",
-      "code": "if self._buffering_enabled:\n    buffer_name = 'A_M_BUFFER' if query.startswith('smua') else 'B_M_BUFFER'\n    query = query[:-1] + buffer_name + ')'\n    self._buffered_script.append(query)\n    return \"inf\"\nelse:\n    command = 'reading = ' + query\n    self.execute(command)\n    self.execute('print(reading)')\n    response = self._socket.recv(1024)\n    response_decoded = response.decode()\n    if 'TSP>' in response_decoded:\n        raise DeviceException(msg='Do not use the web interface before or during use of this control lib! '\n                                  'You have to restart your device in order to continue.')\n    return response_decoded"
+      "code": "if hasattr(self, '_buffering_enabled') and self._buffering_enabled:\n    buffer_name = 'A_M_BUFFER' if query.startswith('smua') else 'B_M_BUFFER'\n    query = query[:-1] + buffer_name + ')'\n    self._buffered_script.append(query)\n    return \"inf\"\nelse:\n    command = 'reading = ' + query\n    self.execute(command)\n    self.execute('print(reading)')\n    response = self._socket.recv(1024)\n    response_decoded = response.decode()\n    if 'TSP>' in response_decoded:\n        raise DeviceException(msg='Do not use the web interface before or during use of this control lib! '\n                                  'You have to restart your device in order to continue.')\n    return response_decoded"
     },
     {
       "name": "measure",
-      "docs": "This function measures a certain unit on a specific channel. Can be used to measure voltage, current, power or resistance.\n:param unit: The thing to measure.\n:param channel: The channel to measure on.\n:param check_errors: Whether to check the error buffer after the execution.\n:return: None.",
+      "docs": "This function measures a certain unit on a specific channel. Can be used to measure voltage, current, power or resistance.\n:param unit: The thing to measure.\n:param channel_idx: The channel to measure on.\n:param check_errors: Whether to check the error buffer after the execution.\n:return: None.",
       "type": "generated",
-      "signature": "unit: Unit, channel: SMUChannel",
+      "signature": "unit: ChannelUnit, channel_idx: ChannelIndex",
       "return": "float",
-      "command": "f'{channel.value}.measure.{unit.value}()'"
+      "command": "f'{self.__to_channel(channel_idx)}.measure.{unit.value}()'"
+    },
+    {
+      "name": "__to_channel",
+      "type": "code",
+      "signature": "channel_idx: ChannelIndex",
+      "return": "str",
+      "code": "channel_idx.check(2)\nreturn 'smua' if channel_idx.get() == 1 else 'smub'"
     },
     {
       "name": "toggle_channel",
       "type": "generated",
-      "signature": "channel: SMUChannel, enable: bool",
-      "command": "f'{channel.value}.source.output = {channel.value}.OUTPUT_{(\"ON\" if enable else \"OFF\")}'"
+      "signature": "channel_idx: ChannelIndex, enable: bool",
+      "command": "f'{self.__to_channel(channel_idx)}.source.output = {self.__to_channel(channel_idx)}.OUTPUT_{(\"ON\" if enable else \"OFF\")}'"
     },
     {
       "name": "set_level",
       "type": "generated",
-      "signature": "unit: Unit, channel: SMUChannel, level: float",
-      "requirements": "unit in (Unit.VOLTAGE, Unit.CURRENT)",
-      "command": "f'{channel.value}.source.level{unit.value} = {level}'"
+      "signature": "unit: ChannelUnit, channel_idx: ChannelIndex, level: float",
+      "requirements": "unit in (ChannelUnit.VOLTAGE, ChannelUnit.CURRENT)",
+      "command": "f'{self.__to_channel(channel_idx)}.source.level{unit.value} = {level}'"
     },
     {
       "name": "set_limit",
       "type": "generated",
-      "signature": "unit: Unit, channel: SMUChannel, limit: float",
-      "requirements": "unit in (Unit.VOLTAGE, Unit.CURRENT, Unit.POWER)",
-      "command": "f'{channel.value}.source.limit{unit.value} = {str(limit)}'"
+      "signature": "unit: ChannelUnit, channel_idx: ChannelIndex, limit: float",
+      "requirements": "unit in (ChannelUnit.VOLTAGE, ChannelUnit.CURRENT, ChannelUnit.POWER)",
+      "command": "f'{self.__to_channel(channel_idx)}.source.limit{unit.value} = {str(limit)}'"
     },
     {
       "name": "toggle_autorange",
       "type": "generated",
-      "signature": "unit: Unit, channel: SMUChannel, mode: SMUMode, enable: bool",
-      "requirements": "unit in (Unit.VOLTAGE, Unit.CURRENT)",
-      "command": "f'{channel.value}.{mode.value}.autorange{unit.value} = {int(enable) if mode == SMUMode.MEASURE else channel.value + \".AUTORANGE_\" + (\"ON\" if enable else \"OFF\")}'"
+      "signature": "unit: ChannelUnit, channel_idx: ChannelIndex, mode: SMUMode, enable: bool",
+      "requirements": "unit in (ChannelUnit.VOLTAGE, ChannelUnit.CURRENT)",
+      "command": "f'{self.__to_channel(channel_idx)}.{mode.value}.autorange{unit.value} = {int(enable) if mode == SMUMode.MEASURE else self.__to_channel(channel_idx) + \".AUTORANGE_\" + (\"ON\" if enable else \"OFF\")}'"
     },
     {
       "name": "toggle_measure_analog_filter",
       "type": "generated",
-      "signature": "channel: SMUChannel, enable: bool",
-      "command": "f'{channel.value}.measure.analogfilter = {int(enable)}'"
+      "signature": "channel_idx: ChannelIndex, enable: bool",
+      "command": "f'{self.__to_channel(channel_idx)}.measure.analogfilter = {int(enable)}'"
     },
     {
       "name": "set_range",
       "type": "generated",
-      "signature": "unit: Unit, channel: SMUChannel, mode: SMUMode, range_: float",
-      "requirements": "unit in (Unit.VOLTAGE, Unit.CURRENT)",
-      "command": "f'{channel.value}.{mode.value}.range{unit.value} = {range_}'"
+      "signature": "unit: ChannelUnit, channel_idx: ChannelIndex, mode: SMUMode, range_: float",
+      "requirements": "unit in (ChannelUnit.VOLTAGE, ChannelUnit.CURRENT)",
+      "command": "f'{self.__to_channel(channel_idx)}.{mode.value}.range{unit.value} = {range_}'"
     },
     {
       "name": "set_sense_mode",
       "type": "generated",
-      "signature": "channel: SMUChannel, sense_arg: SMUSense",
-      "command": "f'{channel.value}.sense = {channel.value}.{sense_arg.value}'"
+      "signature": "channel_idx: ChannelIndex, sense_arg: SMUSense",
+      "command": "f'{self.__to_channel(channel_idx)}.sense = {self.__to_channel(channel_idx)}.{sense_arg.value}'"
     },
     {
       "name": "set_measure_plc",
       "type": "generated",
-      "signature": "channel: SMUChannel, value: float",
+      "signature": "channel_idx: ChannelIndex, value: float",
       "requirements": "0.001 < value < 25",
-      "command":  "f'{channel.value}.measure.nplc = {value}'"
+      "command": "f'{self.__to_channel(channel_idx)}.measure.nplc = {value}'"
     },
     {
       "name": "set_measure_low_range",
       "type": "generated",
-      "signature": "unit: Unit, channel: SMUChannel, value: float",
-      "requirements": "unit in (Unit.VOLTAGE, Unit.CURRENT)",
-      "command":  "f'{channel.value}.measure.lowrange{unit.value} = {value}'"
+      "signature": "unit: ChannelUnit, channel_idx: ChannelIndex, value: float",
+      "requirements": "unit in (ChannelUnit.VOLTAGE, ChannelUnit.CURRENT)",
+      "command": "f'{self.__to_channel(channel_idx)}.measure.lowrange{unit.value} = {value}'"
     },
     {
       "name": "set_measure_auto_zero",
       "type": "generated",
-      "signature": "channel: SMUChannel, auto_zero: Autozero",
-      "command":  "f'{channel.value}.measure.autozero = {channel.value}.{auto_zero.value}'"
+      "signature": "channel_idx: ChannelIndex, auto_zero: Autozero",
+      "command": "f'{self.__to_channel(channel_idx)}.measure.autozero = {self.__to_channel(channel_idx)}.{auto_zero.value}'"
     },
     {
       "name": "set_measure_count",
       "type": "generated",
-      "signature": "channel: SMUChannel, nr_of_measurements: int",
-      "command":  "f'{channel.value}.measure.count = {nr_of_measurements}'"
+      "signature": "channel_idx: ChannelIndex, nr_of_measurements: int",
+      "command": "f'{self.__to_channel(channel_idx)}.measure.count = {nr_of_measurements}'"
     },
     {
       "name": "set_source_function",
       "type": "generated",
-      "signature": "channel: SMUChannel, src_func: SourceFunction",
-      "command":  "f'{channel.value}.source.func = {channel.value}.{src_func.value}'"
+      "signature": "channel_idx: ChannelIndex, src_func: SourceFunction",
+      "command": "f'{self.__to_channel(channel_idx)}.source.func = {self.__to_channel(channel_idx)}.{src_func.value}'"
     },
     {
       "name": "set_source_off_mode",
       "type": "generated",
-      "signature": "channel: SMUChannel, src_off_mode: SourceOffMode",
-      "command":  "f'{channel.value}.source.offmode = {channel.value}.{src_off_mode.value}'"
+      "signature": "channel_idx: ChannelIndex, src_off_mode: SourceOffMode",
+      "command": "f'{self.__to_channel(channel_idx)}.source.offmode = {self.__to_channel(channel_idx)}.{src_off_mode.value}'"
     },
     {
       "name": "set_source_settling",
       "type": "generated",
-      "signature": "channel: SMUChannel, src_settling: SourceSettling",
-      "command":  "f'{channel.value}.source.settling = {channel.value}.{src_settling.value}'"
+      "signature": "channel_idx: ChannelIndex, src_settling: SourceSettling",
+      "command": "f'{self.__to_channel(channel_idx)}.source.settling = {self.__to_channel(channel_idx)}.{src_settling.value}'"
     },
     {
       "name": "toggle_source_sink",
       "type": "generated",
-      "signature": "channel: SMUChannel, enable: bool",
-      "command":  "f'{channel.value}.source.sink = {str(int(enable))}'"
+      "signature": "channel_idx: ChannelIndex, enable: bool",
+      "command": "f'{self.__to_channel(channel_idx)}.source.sink = {str(int(enable))}'"
     },
     {
       "name": "display_measure_function",
       "type": "generated",
-      "signature": "channel: SMUChannel, diplay_measure_func: SMUDisplay",
-      "command":  "f'display.{channel.value}.measure.func = display.{diplay_measure_func.value}'"
+      "signature": "channel_idx: ChannelIndex, diplay_measure_func: SMUDisplay",
+      "command": "f'display.{self.__to_channel(channel_idx)}.measure.func = display.{diplay_measure_func.value}'"
     },
     {
       "name": "toggle_beep",
@@ -163,21 +170,15 @@
       "name": "read_buffer",
       "type": "code",
       "signature": "",
-      "code": "buffer_a = self.__read_channel_buffer(SMUChannel.CHANNEL_A)\nbuffer_b = self.__read_channel_buffer(SMUChannel.CHANNEL_B)\nself._buffer = (buffer_a, buffer_b)"
+      "return": "list[list[str]]",
+      "code": "buffer_a = self.__read_channel_buffer(ChannelIndex(1))\nbuffer_b = self.__read_channel_buffer(ChannelIndex(2))\nself._buffer = [buffer_a, buffer_b]\nreturn copy.deepcopy(self._buffer)"
     },
     {
       "name": "__read_channel_buffer",
       "type": "code",
-      "signature": "channel: SMUChannel",
+      "signature": "channel_idx: ChannelIndex",
       "return": "list[str]",
-      "code": "buffer_name = ('A' if channel == SMUChannel.CHANNEL_A else 'B') + '_M_BUFFER'\nbuffer_size = len([line for line in self._buffered_script if buffer_name in line]) - 2\nbatch_size = 1024 // 15\n\nbuffer = []\noffset = 1\nwhile offset + batch_size <= buffer_size:\n    buffer += self.__get_buffer_content(offset, batch_size, buffer_name)\n    offset += batch_size\n\nif (remaining := buffer_size % batch_size) > 0:\n    buffer += self.__get_buffer_content(offset, remaining, buffer_name)\n\nreturn buffer"
-    },
-    {
-      "name": "get_buffer",
-      "type": "code",
-      "signature": "",
-      "return": "tuple[list[str], list[str]]",
-      "code": "return copy.deepcopy(self._buffer)"
+      "code": "channel_idx.check(2)\nbuffer_name = ('A' if channel_idx.get() == 1 else 'B') + '_M_BUFFER'\nbuffer_size = len([line for line in self._buffered_script if buffer_name in line]) - 2\nbatch_size = 1024 // 15\n\nbuffer = []\noffset = 1\nwhile offset + batch_size <= buffer_size:\n    buffer += self.__get_buffer_content(offset, batch_size, buffer_name)\n    offset += batch_size\n\nif (remaining := buffer_size % batch_size) > 0:\n    buffer += self.__get_buffer_content(offset, remaining, buffer_name)\n\nreturn buffer"
     },
     {
       "name": "__get_buffer_content",
@@ -189,9 +190,30 @@
     {
       "name": "next_buffer_element",
       "type": "code",
-      "signature": "channel: SMUChannel",
+      "signature": "channel_idx: ChannelIndex",
       "return": "float",
-      "code": "if len(self._buffer) == 0:\n    raise Exception('Buffer is empty!')\nbuffer_idx = 0 if channel == SMUChannel.CHANNEL_A else 1\nreturn float(self._buffer[buffer_idx].pop(0))"
+      "code": "channel_idx.check(2)\nif len(self._buffer) == 0:\n    raise Exception('Buffer is empty!')\nbuffer_idx = channel_idx.get() - 1\nreturn float(self._buffer[buffer_idx].pop(0))"
+    },
+    {
+      "name": "set_channel_level",
+      "type": "code",
+      "signature": "unit: ChannelUnit, channel_idx: ChannelIndex, level: float",
+      "return": "None",
+      "code": "channel_idx.check(2)\nself.set_level(unit, channel_idx, level)"
+    },
+    {
+      "name": "measure_channel",
+      "type": "code",
+      "signature": "unit: ChannelUnit, channel_idx: ChannelIndex",
+      "return": "float",
+      "code": "channel_idx.check(2)\nreturn self.measure(unit, channel_idx)"
+    },
+    {
+      "name": "get_channel",
+      "type": "code",
+      "signature": "channel_idx: ChannelIndex",
+      "return": "SourceMeasureChannel",
+      "code": "return SourceMeasureChannel(self, channel_idx, [ChannelUnit.VOLTAGE, ChannelUnit.CURRENT], [ChannelUnit.VOLTAGE, ChannelUnit.CURRENT, ChannelUnit.POWER, ChannelUnit.RESISTANCE], True)"
     }
   ]
 }

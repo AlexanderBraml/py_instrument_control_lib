@@ -4,6 +4,8 @@ Any changes made to this file are overwritten if you regenerate this module.
 Only make changes in the source file.
 """
 
+from py_instrument_control_lib.channels.ChannelEnums import ChannelIndex, ChannelUnit
+from py_instrument_control_lib.channels.Channel import SourceChannel, MeasureChannel, SourceMeasureChannel
 from py_instrument_control_lib.device_base.TCPDevice import TCPDevice
 from py_instrument_control_lib.device_types.AbstractSwitchMatrix import AbstractSwitchMatrix
 from py_instrument_control_lib.device_types.FunctionGenerator import *
@@ -27,14 +29,14 @@ class KEI2600(SMU, KeithleyDevice):
 
     def execute(self, command: str, check_errors: bool = False) \
             -> None:        
-        if self._buffering_enabled:
+        if hasattr(self, '_buffering_enabled') and self._buffering_enabled:
             self._buffered_script.append(command)
         else:
             super().execute(command)
     
     def query(self, query: str, check_errors: bool = False) \
             -> Optional[str]:        
-        if self._buffering_enabled:
+        if hasattr(self, '_buffering_enabled') and self._buffering_enabled:
             buffer_name = 'A_M_BUFFER' if query.startswith('smua') else 'B_M_BUFFER'
             query = query[:-1] + buffer_name + ')'
             self._buffered_script.append(query)
@@ -50,131 +52,136 @@ class KEI2600(SMU, KeithleyDevice):
                                           'You have to restart your device in order to continue.')
             return response_decoded
     
-    def measure(self, unit: Unit, channel: SMUChannel, check_errors: bool = False) \
+    def measure(self, unit: ChannelUnit, channel_idx: ChannelIndex, check_errors: bool = False) \
             -> float:    
         """
         This function measures a certain unit on a specific channel. Can be used to measure voltage, current, power or resistance.
         :param unit: The thing to measure.
-        :param channel: The channel to measure on.
+        :param channel_idx: The channel to measure on.
         :param check_errors: Whether to check the error buffer after the execution.
         :return: None.
         """    
-        val = self.query(f'{channel.value}.measure.{unit.value}()')
+        val = self.query(f'{self.__to_channel(channel_idx)}.measure.{unit.value}()')
         if check_errors:
             self.check_error_buffer()
         return float(val)
     
-    def toggle_channel(self, channel: SMUChannel, enable: bool, check_errors: bool = False) \
+    def __to_channel(self, channel_idx: ChannelIndex, check_errors: bool = False) \
+            -> str:        
+        channel_idx.check(2)
+        return 'smua' if channel_idx.get() == 1 else 'smub'
+    
+    def toggle_channel(self, channel_idx: ChannelIndex, enable: bool, check_errors: bool = False) \
             -> None:        
-        self.execute(f'{channel.value}.source.output = {channel.value}.OUTPUT_{("ON" if enable else "OFF")}')
+        self.execute(f'{self.__to_channel(channel_idx)}.source.output = {self.__to_channel(channel_idx)}.OUTPUT_{("ON" if enable else "OFF")}')
         if check_errors:
             self.check_error_buffer()
     
-    def set_level(self, unit: Unit, channel: SMUChannel, level: float, check_errors: bool = False) \
+    def set_level(self, unit: ChannelUnit, channel_idx: ChannelIndex, level: float, check_errors: bool = False) \
             -> None:        
-        if not (unit in (Unit.VOLTAGE, Unit.CURRENT)):
+        if not (unit in (ChannelUnit.VOLTAGE, ChannelUnit.CURRENT)):
             raise ValueError('Requirements not satisfied')
         
-        self.execute(f'{channel.value}.source.level{unit.value} = {level}')
+        self.execute(f'{self.__to_channel(channel_idx)}.source.level{unit.value} = {level}')
         if check_errors:
             self.check_error_buffer()
     
-    def set_limit(self, unit: Unit, channel: SMUChannel, limit: float, check_errors: bool = False) \
+    def set_limit(self, unit: ChannelUnit, channel_idx: ChannelIndex, limit: float, check_errors: bool = False) \
             -> None:        
-        if not (unit in (Unit.VOLTAGE, Unit.CURRENT, Unit.POWER)):
+        if not (unit in (ChannelUnit.VOLTAGE, ChannelUnit.CURRENT, ChannelUnit.POWER)):
             raise ValueError('Requirements not satisfied')
         
-        self.execute(f'{channel.value}.source.limit{unit.value} = {str(limit)}')
+        self.execute(f'{self.__to_channel(channel_idx)}.source.limit{unit.value} = {str(limit)}')
         if check_errors:
             self.check_error_buffer()
     
-    def toggle_autorange(self, unit: Unit, channel: SMUChannel, mode: SMUMode, enable: bool, check_errors: bool = False) \
+    def toggle_autorange(self, unit: ChannelUnit, channel_idx: ChannelIndex, mode: SMUMode, enable: bool, check_errors: bool = False) \
             -> None:        
-        if not (unit in (Unit.VOLTAGE, Unit.CURRENT)):
+        if not (unit in (ChannelUnit.VOLTAGE, ChannelUnit.CURRENT)):
             raise ValueError('Requirements not satisfied')
         
-        self.execute(f'{channel.value}.{mode.value}.autorange{unit.value} = {int(enable) if mode == SMUMode.MEASURE else channel.value + ".AUTORANGE_" + ("ON" if enable else "OFF")}')
+        self.execute(f'{self.__to_channel(channel_idx)}.{mode.value}.autorange{unit.value} = {int(enable) if mode == SMUMode.MEASURE else self.__to_channel(channel_idx) + ".AUTORANGE_" + ("ON" if enable else "OFF")}')
         if check_errors:
             self.check_error_buffer()
     
-    def toggle_measure_analog_filter(self, channel: SMUChannel, enable: bool, check_errors: bool = False) \
+    def toggle_measure_analog_filter(self, channel_idx: ChannelIndex, enable: bool, check_errors: bool = False) \
             -> None:        
-        self.execute(f'{channel.value}.measure.analogfilter = {int(enable)}')
+        self.execute(f'{self.__to_channel(channel_idx)}.measure.analogfilter = {int(enable)}')
         if check_errors:
             self.check_error_buffer()
     
-    def set_range(self, unit: Unit, channel: SMUChannel, mode: SMUMode, range_: float, check_errors: bool = False) \
+    def set_range(self, unit: ChannelUnit, channel_idx: ChannelIndex, mode: SMUMode, range_: float, check_errors: bool = False) \
             -> None:        
-        if not (unit in (Unit.VOLTAGE, Unit.CURRENT)):
+        if not (unit in (ChannelUnit.VOLTAGE, ChannelUnit.CURRENT)):
             raise ValueError('Requirements not satisfied')
         
-        self.execute(f'{channel.value}.{mode.value}.range{unit.value} = {range_}')
+        self.execute(f'{self.__to_channel(channel_idx)}.{mode.value}.range{unit.value} = {range_}')
         if check_errors:
             self.check_error_buffer()
     
-    def set_sense_mode(self, channel: SMUChannel, sense_arg: SMUSense, check_errors: bool = False) \
+    def set_sense_mode(self, channel_idx: ChannelIndex, sense_arg: SMUSense, check_errors: bool = False) \
             -> None:        
-        self.execute(f'{channel.value}.sense = {channel.value}.{sense_arg.value}')
+        self.execute(f'{self.__to_channel(channel_idx)}.sense = {self.__to_channel(channel_idx)}.{sense_arg.value}')
         if check_errors:
             self.check_error_buffer()
     
-    def set_measure_plc(self, channel: SMUChannel, value: float, check_errors: bool = False) \
+    def set_measure_plc(self, channel_idx: ChannelIndex, value: float, check_errors: bool = False) \
             -> None:        
         if not (0.001 < value < 25):
             raise ValueError('Requirements not satisfied')
         
-        self.execute(f'{channel.value}.measure.nplc = {value}')
+        self.execute(f'{self.__to_channel(channel_idx)}.measure.nplc = {value}')
         if check_errors:
             self.check_error_buffer()
     
-    def set_measure_low_range(self, unit: Unit, channel: SMUChannel, value: float, check_errors: bool = False) \
+    def set_measure_low_range(self, unit: ChannelUnit, channel_idx: ChannelIndex, value: float, check_errors: bool = False) \
             -> None:        
-        if not (unit in (Unit.VOLTAGE, Unit.CURRENT)):
+        if not (unit in (ChannelUnit.VOLTAGE, ChannelUnit.CURRENT)):
             raise ValueError('Requirements not satisfied')
         
-        self.execute(f'{channel.value}.measure.lowrange{unit.value} = {value}')
+        self.execute(f'{self.__to_channel(channel_idx)}.measure.lowrange{unit.value} = {value}')
         if check_errors:
             self.check_error_buffer()
     
-    def set_measure_auto_zero(self, channel: SMUChannel, auto_zero: Autozero, check_errors: bool = False) \
+    def set_measure_auto_zero(self, channel_idx: ChannelIndex, auto_zero: Autozero, check_errors: bool = False) \
             -> None:        
-        self.execute(f'{channel.value}.measure.autozero = {channel.value}.{auto_zero.value}')
+        self.execute(f'{self.__to_channel(channel_idx)}.measure.autozero = {self.__to_channel(channel_idx)}.{auto_zero.value}')
         if check_errors:
             self.check_error_buffer()
     
-    def set_measure_count(self, channel: SMUChannel, nr_of_measurements: int, check_errors: bool = False) \
+    def set_measure_count(self, channel_idx: ChannelIndex, nr_of_measurements: int, check_errors: bool = False) \
             -> None:        
-        self.execute(f'{channel.value}.measure.count = {nr_of_measurements}')
+        self.execute(f'{self.__to_channel(channel_idx)}.measure.count = {nr_of_measurements}')
         if check_errors:
             self.check_error_buffer()
     
-    def set_source_function(self, channel: SMUChannel, src_func: SourceFunction, check_errors: bool = False) \
+    def set_source_function(self, channel_idx: ChannelIndex, src_func: SourceFunction, check_errors: bool = False) \
             -> None:        
-        self.execute(f'{channel.value}.source.func = {channel.value}.{src_func.value}')
+        self.execute(f'{self.__to_channel(channel_idx)}.source.func = {self.__to_channel(channel_idx)}.{src_func.value}')
         if check_errors:
             self.check_error_buffer()
     
-    def set_source_off_mode(self, channel: SMUChannel, src_off_mode: SourceOffMode, check_errors: bool = False) \
+    def set_source_off_mode(self, channel_idx: ChannelIndex, src_off_mode: SourceOffMode, check_errors: bool = False) \
             -> None:        
-        self.execute(f'{channel.value}.source.offmode = {channel.value}.{src_off_mode.value}')
+        self.execute(f'{self.__to_channel(channel_idx)}.source.offmode = {self.__to_channel(channel_idx)}.{src_off_mode.value}')
         if check_errors:
             self.check_error_buffer()
     
-    def set_source_settling(self, channel: SMUChannel, src_settling: SourceSettling, check_errors: bool = False) \
+    def set_source_settling(self, channel_idx: ChannelIndex, src_settling: SourceSettling, check_errors: bool = False) \
             -> None:        
-        self.execute(f'{channel.value}.source.settling = {channel.value}.{src_settling.value}')
+        self.execute(f'{self.__to_channel(channel_idx)}.source.settling = {self.__to_channel(channel_idx)}.{src_settling.value}')
         if check_errors:
             self.check_error_buffer()
     
-    def toggle_source_sink(self, channel: SMUChannel, enable: bool, check_errors: bool = False) \
+    def toggle_source_sink(self, channel_idx: ChannelIndex, enable: bool, check_errors: bool = False) \
             -> None:        
-        self.execute(f'{channel.value}.source.sink = {str(int(enable))}')
+        self.execute(f'{self.__to_channel(channel_idx)}.source.sink = {str(int(enable))}')
         if check_errors:
             self.check_error_buffer()
     
-    def display_measure_function(self, channel: SMUChannel, diplay_measure_func: SMUDisplay, check_errors: bool = False) \
+    def display_measure_function(self, channel_idx: ChannelIndex, diplay_measure_func: SMUDisplay, check_errors: bool = False) \
             -> None:        
-        self.execute(f'display.{channel.value}.measure.func = display.{diplay_measure_func.value}')
+        self.execute(f'display.{self.__to_channel(channel_idx)}.measure.func = display.{diplay_measure_func.value}')
         if check_errors:
             self.check_error_buffer()
     
@@ -254,14 +261,16 @@ class KEI2600(SMU, KeithleyDevice):
         return {'command': 'shellInput', 'value': value}
     
     def read_buffer(self, check_errors: bool = False) \
-            -> None:        
-        buffer_a = self.__read_channel_buffer(SMUChannel.CHANNEL_A)
-        buffer_b = self.__read_channel_buffer(SMUChannel.CHANNEL_B)
-        self._buffer = (buffer_a, buffer_b)
+            -> list[list[str]]:        
+        buffer_a = self.__read_channel_buffer(ChannelIndex(1))
+        buffer_b = self.__read_channel_buffer(ChannelIndex(2))
+        self._buffer = [buffer_a, buffer_b]
+        return copy.deepcopy(self._buffer)
     
-    def __read_channel_buffer(self, channel: SMUChannel, check_errors: bool = False) \
+    def __read_channel_buffer(self, channel_idx: ChannelIndex, check_errors: bool = False) \
             -> list[str]:        
-        buffer_name = ('A' if channel == SMUChannel.CHANNEL_A else 'B') + '_M_BUFFER'
+        channel_idx.check(2)
+        buffer_name = ('A' if channel_idx.get() == 1 else 'B') + '_M_BUFFER'
         buffer_size = len([line for line in self._buffered_script if buffer_name in line]) - 2
         batch_size = 1024 // 15
         
@@ -276,19 +285,30 @@ class KEI2600(SMU, KeithleyDevice):
         
         return buffer
     
-    def get_buffer(self, check_errors: bool = False) \
-            -> tuple[list[str], list[str]]:        
-        return copy.deepcopy(self._buffer)
-    
     def __get_buffer_content(self, offset: int, batch_size: int, buffer_name: str, check_errors: bool = False) \
             -> list[str]:        
         print_query = f'printbuffer({offset}, {offset + batch_size - 1}, {buffer_name})'
         self.execute(print_query)
         return self._socket.recv(1024).decode().replace('\n', '').split(', ')
     
-    def next_buffer_element(self, channel: SMUChannel, check_errors: bool = False) \
+    def next_buffer_element(self, channel_idx: ChannelIndex, check_errors: bool = False) \
             -> float:        
+        channel_idx.check(2)
         if len(self._buffer) == 0:
             raise Exception('Buffer is empty!')
-        buffer_idx = 0 if channel == SMUChannel.CHANNEL_A else 1
+        buffer_idx = channel_idx.get() - 1
         return float(self._buffer[buffer_idx].pop(0))
+    
+    def set_channel_level(self, unit: ChannelUnit, channel_idx: ChannelIndex, level: float, check_errors: bool = False) \
+            -> None:        
+        channel_idx.check(2)
+        self.set_level(unit, channel_idx, level)
+    
+    def measure_channel(self, unit: ChannelUnit, channel_idx: ChannelIndex, check_errors: bool = False) \
+            -> float:        
+        channel_idx.check(2)
+        return self.measure(unit, channel_idx)
+    
+    def get_channel(self, channel_idx: ChannelIndex, check_errors: bool = False) \
+            -> SourceMeasureChannel:        
+        return SourceMeasureChannel(self, channel_idx, [ChannelUnit.VOLTAGE, ChannelUnit.CURRENT], [ChannelUnit.VOLTAGE, ChannelUnit.CURRENT, ChannelUnit.POWER, ChannelUnit.RESISTANCE], True)
