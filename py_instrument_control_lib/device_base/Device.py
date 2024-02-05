@@ -1,5 +1,7 @@
 from abc import ABC, abstractmethod
 
+from py_instrument_control_lib.channels.Channel import Channel
+from py_instrument_control_lib.channels.ChannelEnums import ChannelIndex
 from py_instrument_control_lib.device_base.DeviceConfigs import DeviceConfig
 
 
@@ -21,4 +23,8 @@ class Device(ABC):
 
     @abstractmethod
     def disconnect(self) -> None:
+        pass
+
+    @abstractmethod
+    def get_channel(self, channel_idx: ChannelIndex, check_errors: bool = False) -> Channel:
         pass
