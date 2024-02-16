@@ -36,22 +36,22 @@
     {
       "name": "set_channel_offset",
       "type": "generated",
-      "signature": "channel: OscChannel, offset: float",
-      "command": "f'CHANnel{channel.value}:offset {offset}'",
-      "TODO": "Check if channel.value is right"
+      "signature": "channel_idx: ChannelIndex, offset: float",
+      "command": "f'CHANnel{self.__to_channel(channel_idx)}:offset {offset}'",
+      "TODO": "Check if self.__to_channel(channel_idx) is right"
     },
     {
       "name": "set_channel_scale",
       "type": "generated",
-      "signature": "channel: OscChannel, scale: float",
-      "command": "f'CHANnel{channel.value}:SCALe {scale}'",
-      "TODO": "Check if channel.value is right"
+      "signature": "channel_idx: ChannelIndex, scale: float",
+      "command": "f'CHANnel{self.__to_channel(channel_idx)}:SCALe {scale}'",
+      "TODO": "Check if self.__to_channel(channel_idx) is right"
     },
     {
       "name": "set_channel_range",
       "type": "generated",
-      "signature": "channel: OscChannel, value: float, voltage_unit: VoltageUnit",
-      "command": "f'CHANnel{channel.value}:RANGe range {\"mV\" if voltage_unit == VoltageUnit.MILLI_VOLT else \"\"}'"
+      "signature": "channel_idx: ChannelIndex, value: float, voltage_unit: VoltageUnit",
+      "command": "f'CHANnel{self.__to_channel(channel_idx)}:RANGe range {\"mV\" if voltage_unit == VoltageUnit.MILLI_VOLT else \"\"}'"
     },
     {
       "name": "set_trigger_edge",
@@ -62,8 +62,8 @@
     {
       "name": "set_trigger_source",
       "type": "generated",
-      "signature": "channel: OscChannel",
-      "command": "f'TRIGger:SOURceCHAN{channel.value}'",
+      "signature": "channel_idx: ChannelIndex",
+      "command": "f'TRIGger:SOURceCHAN{self.__to_channel(channel_idx)}'",
       "TODO": "Check"
     },
     {
@@ -75,8 +75,8 @@
     {
       "name": "set_waveform_source",
       "type": "generated",
-      "signature": "channel: OscChannel",
-      "command": "f'WAVeform:SOURce CHANnel{channel.value}'"
+      "signature": "channel_idx: ChannelIndex",
+      "command": "f'WAVeform:SOURce CHANnel{self.__to_channel(channel_idx)}'"
     },
     {
       "name": "get_waveform_preamble",
@@ -135,8 +135,8 @@
     {
       "name": "digitize",
       "type": "generated",
-      "signature": "channel: OscChannel",
-      "command": "f'DIGitize CHAnnel{channel.value}'"
+      "signature": "channel_idx: ChannelIndex",
+      "command": "f'DIGitize CHAnnel{self.__to_channel(channel_idx)}'"
     },
     {
       "name": "get_system_setup",
@@ -153,14 +153,27 @@
     {
       "name": "set_channel_display",
       "type": "generated",
-      "signature": "channel: OscChannel, enable: bool",
-      "command": "f'CHANnel:DISPLAY{channel.value} {int(enable)}'"
+      "signature": "channel_idx: ChannelIndex, enable: bool",
+      "command": "f'CHANnel:DISPLAY{self.__to_channel(channel_idx)} {int(enable)}'"
     },
     {
       "name": "get_channel",
       "type": "code",
       "signature": "channel_idx: ChannelIndex",
       "code": "raise NotImplementedError('Channels are not supported yet.')"
+    },
+    {
+      "name": "__to_channel",
+      "type": "code",
+      "signature": "channel_idx: ChannelIndex",
+      "return": "str",
+      "code": "channel_idx.check(4)\nreturn str(channel_idx)"
+    },
+    {
+      "name": "check_error_buffer",
+      "type": "code",
+      "signature": "",
+      "code": "pass"
     }
   ]
 }

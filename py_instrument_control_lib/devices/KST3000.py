@@ -52,21 +52,21 @@ class KST3000(Oscilloscope, KeysightDevice):
         if check_errors:
             self.check_error_buffer()
     
-    def set_channel_offset(self, channel: OscChannel, offset: float, check_errors: bool = False) \
+    def set_channel_offset(self, channel_idx: ChannelIndex, offset: float, check_errors: bool = False) \
             -> None:        
-        self.execute(f'CHANnel{channel.value}:offset {offset}')
+        self.execute(f'CHANnel{self.__to_channel(channel_idx)}:offset {offset}')
         if check_errors:
             self.check_error_buffer()
     
-    def set_channel_scale(self, channel: OscChannel, scale: float, check_errors: bool = False) \
+    def set_channel_scale(self, channel_idx: ChannelIndex, scale: float, check_errors: bool = False) \
             -> None:        
-        self.execute(f'CHANnel{channel.value}:SCALe {scale}')
+        self.execute(f'CHANnel{self.__to_channel(channel_idx)}:SCALe {scale}')
         if check_errors:
             self.check_error_buffer()
     
-    def set_channel_range(self, channel: OscChannel, value: float, voltage_unit: VoltageUnit, check_errors: bool = False) \
+    def set_channel_range(self, channel_idx: ChannelIndex, value: float, voltage_unit: VoltageUnit, check_errors: bool = False) \
             -> None:        
-        self.execute(f'CHANnel{channel.value}:RANGe range {"mV" if voltage_unit == VoltageUnit.MILLI_VOLT else ""}')
+        self.execute(f'CHANnel{self.__to_channel(channel_idx)}:RANGe range {"mV" if voltage_unit == VoltageUnit.MILLI_VOLT else ""}')
         if check_errors:
             self.check_error_buffer()
     
@@ -76,9 +76,9 @@ class KST3000(Oscilloscope, KeysightDevice):
         if check_errors:
             self.check_error_buffer()
     
-    def set_trigger_source(self, channel: OscChannel, check_errors: bool = False) \
+    def set_trigger_source(self, channel_idx: ChannelIndex, check_errors: bool = False) \
             -> None:        
-        self.execute(f'TRIGger:SOURceCHAN{channel.value}')
+        self.execute(f'TRIGger:SOURceCHAN{self.__to_channel(channel_idx)}')
         if check_errors:
             self.check_error_buffer()
     
@@ -88,9 +88,9 @@ class KST3000(Oscilloscope, KeysightDevice):
         if check_errors:
             self.check_error_buffer()
     
-    def set_waveform_source(self, channel: OscChannel, check_errors: bool = False) \
+    def set_waveform_source(self, channel_idx: ChannelIndex, check_errors: bool = False) \
             -> None:        
-        self.execute(f'WAVeform:SOURce CHANnel{channel.value}')
+        self.execute(f'WAVeform:SOURce CHANnel{self.__to_channel(channel_idx)}')
         if check_errors:
             self.check_error_buffer()
     
@@ -164,9 +164,9 @@ class KST3000(Oscilloscope, KeysightDevice):
             self.check_error_buffer()
         return result
     
-    def digitize(self, channel: OscChannel, check_errors: bool = False) \
+    def digitize(self, channel_idx: ChannelIndex, check_errors: bool = False) \
             -> None:        
-        self.execute(f'DIGitize CHAnnel{channel.value}')
+        self.execute(f'DIGitize CHAnnel{self.__to_channel(channel_idx)}')
         if check_errors:
             self.check_error_buffer()
     
@@ -182,12 +182,21 @@ class KST3000(Oscilloscope, KeysightDevice):
         if check_errors:
             self.check_error_buffer()
     
-    def set_channel_display(self, channel: OscChannel, enable: bool, check_errors: bool = False) \
+    def set_channel_display(self, channel_idx: ChannelIndex, enable: bool, check_errors: bool = False) \
             -> None:        
-        self.execute(f'CHANnel:DISPLAY{channel.value} {int(enable)}')
+        self.execute(f'CHANnel:DISPLAY{self.__to_channel(channel_idx)} {int(enable)}')
         if check_errors:
             self.check_error_buffer()
     
     def get_channel(self, channel_idx: ChannelIndex, check_errors: bool = False) \
             -> None:        
         raise NotImplementedError('Channels are not supported yet.')
+    
+    def __to_channel(self, channel_idx: ChannelIndex, check_errors: bool = False) \
+            -> str:        
+        channel_idx.check(4)
+        return str(channel_idx)
+    
+    def check_error_buffer(self, check_errors: bool = False) \
+            -> None:        
+        pass
