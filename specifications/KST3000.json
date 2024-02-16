@@ -167,7 +167,7 @@
       "type": "code",
       "signature": "channel_idx: ChannelIndex",
       "return": "str",
-      "code": "channel_idx.check(4)\nreturn str(channel_idx)"
+      "code": "channel_idx.check(4)\nreturn str(channel_idx.get())"
     },
     {
       "name": "check_error_buffer",
