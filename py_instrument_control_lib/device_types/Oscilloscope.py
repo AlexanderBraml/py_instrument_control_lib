@@ -1,14 +1,8 @@
 from abc import ABC
 from enum import Enum
 
+from py_instrument_control_lib.channels.ChannelEnums import ChannelIndex
 from py_instrument_control_lib.device_base.Device import Device
-
-
-class OscChannel(Enum):
-    CHANNEL_1 = "1"
-    CHANNEL_2 = "2"
-    CHANNEL_3 = "3"
-    CHANNEL_4 = "4"
 
 
 class VoltageUnit(Enum):
@@ -53,17 +47,17 @@ class Oscilloscope(Device, ABC):
     def set_time_range(self, value: float) -> None:
         pass
 
-    def set_channel_offset(self, channel: OscChannel, offset: float) -> None:
+    def set_channel_offset(self, channel_idx: ChannelIndex, offset: float) -> None:
         pass
 
-    def set_channel_scale(self, channel: OscChannel, value: float) -> None:
+    def set_channel_scale(self, channel_idx: ChannelIndex, value: float) -> None:
         pass
 
-    def set_channel_range(self, channel: OscChannel, value: float, voltage_unit: VoltageUnit) -> None:
+    def set_channel_range(self, channel_idx: ChannelIndex, value: float, voltage_unit: VoltageUnit) -> None:
         pass
 
     def set_trigger_edge(self, edge: TriggerEdge) -> None:
         pass
 
-    def set_trigger_source(self, channel: OscChannel) -> None:
+    def set_trigger_source(self, channel_idx: ChannelIndex) -> None:
         pass
