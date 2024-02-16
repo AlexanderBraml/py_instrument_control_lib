@@ -120,19 +120,17 @@
     },
     {
       "name": "get_waveform_data",
-      "type": "generated",
+      "type": "code",
       "signature": "",
       "return": "str",
-      "command": "'WAVeform:DATA?'",
-      "TODO": "Maybe make substring [10:-1]"
+      "code": "self.execute('WAVeform:DATA?')\nresponse = self._socket.recv(1024)\nif check_errors:\n    self.check_error_buffer()\nreturn response"
     },
     {
       "name": "get_real_data",
-      "type": "generated",
+      "type": "code",
       "signature": "",
-      "return": "str",
-      "command": "''",
-      "TODO": "IMPLEMENT!"
+      "return": "tuple[list[float], list[float]]",
+      "code": "preamble = self.get_waveform_preamble().split(',')\nx_increment = float(preamble[4])\nx_origin = float(preamble[5])\nx_reference = float(preamble[6])\ny_increment = float(preamble[7])\ny_origin = float(preamble[8])\ny_reference = float(preamble[9])\n\ndata = self.get_waveform_data()[10:]\nresult = ([], [])\nfor i in range(self.get_waveform_points()):\n    time = ((i - x_reference) * x_increment) + x_origin\n    voltage_data = int(data[i])\n    if voltage_data != 0:  # Not a hole. Holes are locations where data has not yet been acquired.\n        voltage = ((voltage_data - y_reference) * y_increment) + y_origin\n        result[0].append(time)\n        result[1].append(voltage)\n\nif check_errors:\n    self.check_error_buffer()\nreturn result"
     },
     {
       "name": "digitize",
@@ -157,6 +155,12 @@
       "type": "generated",
       "signature": "channel: OscChannel, enable: bool",
       "command": "f'CHANnel:DISPLAY{channel.value} {int(enable)}'"
+    },
+    {
+      "name": "get_channel",
+      "type": "code",
+      "signature": "channel_idx: ChannelIndex",
+      "code": "raise NotImplementedError('Channels are not supported yet.')"
     }
   ]
 }

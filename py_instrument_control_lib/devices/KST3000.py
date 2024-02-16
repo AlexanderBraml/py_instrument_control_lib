@@ -134,17 +134,35 @@ class KST3000(Oscilloscope, KeysightDevice):
     
     def get_waveform_data(self, check_errors: bool = False) \
             -> str:        
-        val = self.query('WAVeform:DATA?')
+        self.execute('WAVeform:DATA?')
+        response = self._socket.recv(1024)
         if check_errors:
             self.check_error_buffer()
-        return val
+        return response
     
     def get_real_data(self, check_errors: bool = False) \
-            -> str:        
-        val = self.query('')
+            -> tuple[list[float], list[float]]:        
+        preamble = self.get_waveform_preamble().split(',')
+        x_increment = float(preamble[4])
+        x_origin = float(preamble[5])
+        x_reference = float(preamble[6])
+        y_increment = float(preamble[7])
+        y_origin = float(preamble[8])
+        y_reference = float(preamble[9])
+        
+        data = self.get_waveform_data()[10:]
+        result = ([], [])
+        for i in range(self.get_waveform_points()):
+            time = ((i - x_reference) * x_increment) + x_origin
+            voltage_data = int(data[i])
+            if voltage_data != 0:  # Not a hole. Holes are locations where data has not yet been acquired.
+                voltage = ((voltage_data - y_reference) * y_increment) + y_origin
+                result[0].append(time)
+                result[1].append(voltage)
+        
         if check_errors:
             self.check_error_buffer()
-        return val
+        return result
     
     def digitize(self, channel: OscChannel, check_errors: bool = False) \
             -> None:        
@@ -169,3 +187,7 @@ class KST3000(Oscilloscope, KeysightDevice):
         self.execute(f'CHANnel:DISPLAY{channel.value} {int(enable)}')
         if check_errors:
             self.check_error_buffer()
+    
+    def get_channel(self, channel_idx: ChannelIndex, check_errors: bool = False) \
+            -> None:        
+        raise NotImplementedError('Channels are not supported yet.')
