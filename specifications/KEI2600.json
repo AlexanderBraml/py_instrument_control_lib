@@ -156,8 +156,26 @@
     {
       "name": "execute_buffered_script",
       "type": "code",
-      "signature": "blocking: bool = True",
-      "code": "self.toggle_buffering(False)\n\nbuffer_entries_a = len([line for line in self._buffered_script if 'A_M_BUFFER' in line])\nbuffer_entries_b = len([line for line in self._buffered_script if 'B_M_BUFFER' in line])\ndefault_script = [\"loadscript pyBuff\",\n                  f'A_M_BUFFER = smua.makebuffer({buffer_entries_a})',\n                  f'B_M_BUFFER = smub.makebuffer({buffer_entries_b})',\n                  'A_M_BUFFER.appendmode = 1',\n                  'B_M_BUFFER.appendmode = 1']\nself._buffered_script = default_script + self._buffered_script\nself._buffered_script.append('endscript')\n\nexit_payload: dict = {'command': 'keyInput', 'value': 'K'}\npayloads: list[dict] = []\n\nn = 32\nchunks = [self._buffered_script[i:i + n] for i in range(0, len(self._buffered_script), n)]\n\npayloads += [self.__make_payload('\\n'.join(chunk)) for chunk in chunks]\npayloads += [self.__make_payload('pyBuff.save()'), exit_payload]\n\nfor payload in payloads:\n    response = requests.post('http://' + self._config.ip + '/HttpCommand', json=payload)\n    if response.status_code != 200:\n        raise DeviceException(msg='Failed to send and execute buffered script')\n    time.sleep(0.5)\n\nself.execute('pyBuff()')\n\nprint('Waiting for script to complete')\nif blocking:\n    status = requests.post('http://' + self._config.ip + '/HttpCommand', json={\n        \"command\": \"shellOutput\",\n        \"timeout\": 3,\n        \"acceptsMultiple\": True\n    })\n    while status.json()['status']['value'] == 'timeout':\n        status = requests.post('http://' + self._config.ip + '/HttpCommand', json={\n            \"command\": \"shellOutput\",\n            \"timeout\": 3,\n            \"acceptsMultiple\": True\n        })\n    print('Script finished')"
+      "signature": "blocking: bool = True, script_name: str = 'BufferedScript'",
+      "code": "for buffer in ('A_M_BUFFER', 'B_M_BUFFER'):\n    buffer_entries = len([line for line in self._buffered_script if buffer in line])\n    self._buffered_script.insert(0, f'{buffer} = smu{buffer[0].lower()}.makebuffer({buffer_entries})')\n    self._buffered_script.insert(1, f'{buffer}.appendmode = 1')\nself.send_execute_script(self._buffered_script, script_name, blocking)"
+    },
+    {
+      "name": "send_script",
+      "type": "code",
+      "signature": "script: list[str] | str, script_name: str",
+      "code": "if isinstance(script, str):\n    script = script.split('\\n')\nscript = [f'loadscript {script_name}', *script, 'endscript']\n\nchunk_size = 32\nchunks = [script[i:i + chunk_size] for i in range(0, len(script), chunk_size)]\nexit_payload: dict = {'command': 'keyInput', 'value': 'K'}\npayloads: list[dict] = [exit_payload,\n                        *[self.__make_payload('\\n'.join(chunk)) for chunk in chunks],\n                        self.__make_payload(f'{script_name}.save()'),\n                        exit_payload]\n\nfor payload in payloads:\n    response = requests.post('http://' + self._config.ip + '/HttpCommand', json=payload)\n    if response.status_code != 200:\n        raise DeviceException(msg='Failed to send and execute buffered script')\n    time.sleep(0.5)"
+    },
+    {
+      "name": "execute_script",
+      "type": "code",
+      "signature": "script_name: str, blocking: bool = True",
+      "code": "buffering_enabled = hasattr(self, '_buffering_enabled') and self._buffering_enabled\nself.toggle_buffering(False)\nself.execute(f'{script_name}()')\nself.toggle_buffering(buffering_enabled)\n\nif blocking:\n    poll_payload = {\"command\": \"shellOutput\", \"timeout\": 3, \"acceptsMultiple\": True}\n    print('Waiting for script to complete')\n    status = requests.post('http://' + self._config.ip + '/HttpCommand', json=poll_payload)\n    while status.json()['status']['value'] == 'timeout':\n        status = requests.post('http://' + self._config.ip + '/HttpCommand', json=poll_payload)\n    print('Script finished')"
+    },
+    {
+      "name": "send_execute_script",
+      "type": "code",
+      "signature": "script: list[str] | str, script_name: str, blocking: bool = True",
+      "code": "self.send_script(script, script_name)\nself.execute_script(script_name, blocking)"
     },
     {
       "name": "__make_payload",
@@ -171,7 +189,7 @@
       "type": "code",
       "signature": "",
       "return": "list[list[str]]",
-      "code": "buffer_a = self.__read_channel_buffer(ChannelIndex(1))\nbuffer_b = self.__read_channel_buffer(ChannelIndex(2))\nself._buffer = [buffer_a, buffer_b]\nreturn copy.deepcopy(self._buffer)"
+      "code": "buffering_enabled = hasattr(self, '_buffering_enabled') and self._buffering_enabled\nself.toggle_buffering(False)\nself._buffer = [self.__read_channel_buffer(ChannelIndex(1)), self.__read_channel_buffer(ChannelIndex(2))]\nself.toggle_buffering(buffering_enabled)\nreturn copy.deepcopy(self._buffer)"
     },
     {
       "name": "__read_channel_buffer",
@@ -214,6 +232,12 @@
       "signature": "channel_idx: ChannelIndex",
       "return": "SourceMeasureChannel",
       "code": "return SourceMeasureChannel(self, channel_idx, [ChannelUnit.VOLTAGE, ChannelUnit.CURRENT], [ChannelUnit.VOLTAGE, ChannelUnit.CURRENT, ChannelUnit.POWER, ChannelUnit.RESISTANCE], True)"
+    },
+    {
+      "name": "perform_linear_voltage_sweep",
+      "type": "code",
+      "signature": "channel_idx: ChannelIndex, start_voltage: float, stop_voltage: float, increase_rate: float, current: float, blocking: bool = True",
+      "code": "precision = 1000\nfactor = 1 if start_voltage <= stop_voltage else -1\nscript = f'''channel = {self.__to_channel(channel_idx)}\nchannel.source.func = channel.OUTPUT_DCVOLTS\nchannel.source.output = channel.OUTPUT_ON\nchannel.source.limitv = {factor * stop_voltage} + 0.1\nchannel.source.limiti = {current} + 0.0001\nchannel.source.leveli = {current}\nfor current_voltage = {factor * start_voltage * precision}, {factor * stop_voltage * precision} do\n    channel.source.levelv = {factor} * current_voltage / {precision}\n    delay(1 / {increase_rate * precision})\n    end\nchannel.source.output = channel.OUTPUT_OFF'''\nself.send_execute_script(script, \"LinearVoltageSweep\", blocking)"
     }
   ]
 }

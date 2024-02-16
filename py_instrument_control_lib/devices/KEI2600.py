@@ -210,51 +210,53 @@ class KEI2600(SMU, KeithleyDevice):
         if not hasattr(self, '_buffered_script'):
             self._buffered_script = []
     
-    def execute_buffered_script(self, blocking: bool = True, check_errors: bool = False) \
+    def execute_buffered_script(self, blocking: bool = True, script_name: str = 'BufferedScript', check_errors: bool = False) \
             -> None:        
-        self.toggle_buffering(False)
+        for buffer in ('A_M_BUFFER', 'B_M_BUFFER'):
+            buffer_entries = len([line for line in self._buffered_script if buffer in line])
+            self._buffered_script.insert(0, f'{buffer} = smu{buffer[0].lower()}.makebuffer({buffer_entries})')
+            self._buffered_script.insert(1, f'{buffer}.appendmode = 1')
+        self.send_execute_script(self._buffered_script, script_name, blocking)
+    
+    def send_script(self, script: list[str] | str, script_name: str, check_errors: bool = False) \
+            -> None:        
+        if isinstance(script, str):
+            script = script.split('\n')
+        script = [f'loadscript {script_name}', *script, 'endscript']
         
-        buffer_entries_a = len([line for line in self._buffered_script if 'A_M_BUFFER' in line])
-        buffer_entries_b = len([line for line in self._buffered_script if 'B_M_BUFFER' in line])
-        default_script = ["loadscript pyBuff",
-                          f'A_M_BUFFER = smua.makebuffer({buffer_entries_a})',
-                          f'B_M_BUFFER = smub.makebuffer({buffer_entries_b})',
-                          'A_M_BUFFER.appendmode = 1',
-                          'B_M_BUFFER.appendmode = 1']
-        self._buffered_script = default_script + self._buffered_script
-        self._buffered_script.append('endscript')
-        
+        chunk_size = 32
+        chunks = [script[i:i + chunk_size] for i in range(0, len(script), chunk_size)]
         exit_payload: dict = {'command': 'keyInput', 'value': 'K'}
-        payloads: list[dict] = []
-        
-        n = 32
-        chunks = [self._buffered_script[i:i + n] for i in range(0, len(self._buffered_script), n)]
-        
-        payloads += [self.__make_payload('\n'.join(chunk)) for chunk in chunks]
-        payloads += [self.__make_payload('pyBuff.save()'), exit_payload]
+        payloads: list[dict] = [exit_payload,
+                                *[self.__make_payload('\n'.join(chunk)) for chunk in chunks],
+                                self.__make_payload(f'{script_name}.save()'),
+                                exit_payload]
         
         for payload in payloads:
             response = requests.post('http://' + self._config.ip + '/HttpCommand', json=payload)
             if response.status_code != 200:
                 raise DeviceException(msg='Failed to send and execute buffered script')
             time.sleep(0.5)
+    
+    def execute_script(self, script_name: str, blocking: bool = True, check_errors: bool = False) \
+            -> None:        
+        buffering_enabled = hasattr(self, '_buffering_enabled') and self._buffering_enabled
+        self.toggle_buffering(False)
+        self.execute(f'{script_name}()')
+        self.toggle_buffering(buffering_enabled)
         
-        self.execute('pyBuff()')
-        
-        print('Waiting for script to complete')
         if blocking:
-            status = requests.post('http://' + self._config.ip + '/HttpCommand', json={
-                "command": "shellOutput",
-                "timeout": 3,
-                "acceptsMultiple": True
-            })
+            poll_payload = {"command": "shellOutput", "timeout": 3, "acceptsMultiple": True}
+            print('Waiting for script to complete')
+            status = requests.post('http://' + self._config.ip + '/HttpCommand', json=poll_payload)
             while status.json()['status']['value'] == 'timeout':
-                status = requests.post('http://' + self._config.ip + '/HttpCommand', json={
-                    "command": "shellOutput",
-                    "timeout": 3,
-                    "acceptsMultiple": True
-                })
+                status = requests.post('http://' + self._config.ip + '/HttpCommand', json=poll_payload)
             print('Script finished')
+    
+    def send_execute_script(self, script: list[str] | str, script_name: str, blocking: bool = True, check_errors: bool = False) \
+            -> None:        
+        self.send_script(script, script_name)
+        self.execute_script(script_name, blocking)
     
     def __make_payload(self, value: str, check_errors: bool = False) \
             -> dict:        
@@ -262,9 +264,10 @@ class KEI2600(SMU, KeithleyDevice):
     
     def read_buffer(self, check_errors: bool = False) \
             -> list[list[str]]:        
-        buffer_a = self.__read_channel_buffer(ChannelIndex(1))
-        buffer_b = self.__read_channel_buffer(ChannelIndex(2))
-        self._buffer = [buffer_a, buffer_b]
+        buffering_enabled = hasattr(self, '_buffering_enabled') and self._buffering_enabled
+        self.toggle_buffering(False)
+        self._buffer = [self.__read_channel_buffer(ChannelIndex(1)), self.__read_channel_buffer(ChannelIndex(2))]
+        self.toggle_buffering(buffering_enabled)
         return copy.deepcopy(self._buffer)
     
     def __read_channel_buffer(self, channel_idx: ChannelIndex, check_errors: bool = False) \
@@ -312,3 +315,20 @@ class KEI2600(SMU, KeithleyDevice):
     def get_channel(self, channel_idx: ChannelIndex, check_errors: bool = False) \
             -> SourceMeasureChannel:        
         return SourceMeasureChannel(self, channel_idx, [ChannelUnit.VOLTAGE, ChannelUnit.CURRENT], [ChannelUnit.VOLTAGE, ChannelUnit.CURRENT, ChannelUnit.POWER, ChannelUnit.RESISTANCE], True)
+    
+    def perform_linear_voltage_sweep(self, channel_idx: ChannelIndex, start_voltage: float, stop_voltage: float, increase_rate: float, current: float, blocking: bool = True, check_errors: bool = False) \
+            -> None:        
+        precision = 1000
+        factor = 1 if start_voltage <= stop_voltage else -1
+        script = f'''channel = {self.__to_channel(channel_idx)}
+        channel.source.func = channel.OUTPUT_DCVOLTS
+        channel.source.output = channel.OUTPUT_ON
+        channel.source.limitv = {factor * stop_voltage} + 0.1
+        channel.source.limiti = {current} + 0.0001
+        channel.source.leveli = {current}
+        for current_voltage = {factor * start_voltage * precision}, {factor * stop_voltage * precision} do
+            channel.source.levelv = {factor} * current_voltage / {precision}
+            delay(1 / {increase_rate * precision})
+            end
+        channel.source.output = channel.OUTPUT_OFF'''
+        self.send_execute_script(script, "LinearVoltageSweep", blocking)

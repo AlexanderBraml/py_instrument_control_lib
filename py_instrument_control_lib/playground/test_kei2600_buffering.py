@@ -9,6 +9,8 @@ smu = KEI2600(smu_config)
 smu.connect()
 smu.toggle_buffering(True)
 
+iterations = 10
+
 smu.set_limit(ChannelUnit.CURRENT, ChannelIndex(1), 1)
 smu.set_limit(ChannelUnit.CURRENT, ChannelIndex(2), 1)
 smu.display_measure_function(ChannelIndex(1), SMUDisplay.MEASURE_DC_AMPS)
@@ -26,24 +28,23 @@ smu.toggle_channel(ChannelIndex(1), True)
 smu.toggle_channel(ChannelIndex(2), True)
 smu.set_level(ChannelUnit.VOLTAGE, ChannelIndex(1), 1)
 smu.set_level(ChannelUnit.VOLTAGE, ChannelIndex(2), 1)
-for i in range(0, 10):
-    smu.measure(ChannelUnit.CURRENT, ChannelIndex(1))
+for i in range(iterations):
+    smu.measure(ChannelUnit.VOLTAGE, ChannelIndex(1))
     smu.measure(ChannelUnit.VOLTAGE, ChannelIndex(1))
     smu.measure(ChannelUnit.VOLTAGE, ChannelIndex(2))
-    smu.measure(ChannelUnit.CURRENT, ChannelIndex(1))
+    smu.measure(ChannelUnit.VOLTAGE, ChannelIndex(1))
     smu.measure(ChannelUnit.VOLTAGE, ChannelIndex(2))
 smu.toggle_channel(ChannelIndex(1), False)
 smu.toggle_channel(ChannelIndex(2), False)
 
 smu.execute_buffered_script(blocking=True)
 smu.read_buffer()
-buff = smu.get_buffer()
 
-for i in range(0, 10):
-    print(f'smu.measure(ChannelUnit.CURRENT, ChannelIndex(1)) = {smu.next_buffer_element(ChannelIndex(1))}\n')
-    print(f'smu.measure(ChannelUnit.VOLTAGE, ChannelIndex(1)) = {smu.next_buffer_element(ChannelIndex(1))}\n')
-    print(f'smu.measure(ChannelUnit.VOLTAGE, ChannelIndex(2)) = {smu.next_buffer_element(ChannelIndex(2))}\n')
-    print(f'smu.measure(ChannelUnit.CURRENT, ChannelIndex(1)) = {smu.next_buffer_element(ChannelIndex(1))}\n')
-    print(f'smu.measure(ChannelUnit.VOLTAGE, ChannelIndex(2)) = {smu.next_buffer_element(ChannelIndex(2))}\n')
+for i in range(iterations):
+    print(f'smu.measure(ChannelUnit.CURRENT, ChannelIndex(1)) = {smu.next_buffer_element(ChannelIndex(1))}')
+    print(f'smu.measure(ChannelUnit.VOLTAGE, ChannelIndex(1)) = {smu.next_buffer_element(ChannelIndex(1))}')
+    print(f'smu.measure(ChannelUnit.VOLTAGE, ChannelIndex(2)) = {smu.next_buffer_element(ChannelIndex(2))}')
+    print(f'smu.measure(ChannelUnit.CURRENT, ChannelIndex(1)) = {smu.next_buffer_element(ChannelIndex(1))}')
+    print(f'smu.measure(ChannelUnit.VOLTAGE, ChannelIndex(2)) = {smu.next_buffer_element(ChannelIndex(2))}')
 
 pass
