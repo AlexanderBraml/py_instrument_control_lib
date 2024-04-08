@@ -9,10 +9,13 @@ class ParentDevice(Protocol):
     def toggle_buffering(self, enable: bool) -> None:
         pass
 
-    def execute_buffered_script(self, blocking: bool, check_errors: bool) -> None:
+    def execute_buffered_script(self, blocking: bool, check_errors: bool = False) -> None:
         pass
 
-    def read_buffer(self, check_errors: bool) -> list:
+    def read_buffer(self, check_errors: bool = False) -> list:
+        pass
+
+    def get_buffer(self, check_errors: bool = False) -> list:
         pass
 
     def next_buffer_element(self, channel_idx: ChannelIndex) -> Any:
@@ -36,21 +39,20 @@ class MeasureDevice(ParentDevice, Protocol):
 
 class Channel(ABC):
 
-    def __init__(self, device: ParentDevice, channel_idx: ChannelIndex, supported_source_units: list[ChannelUnit],
-                 supported_measure_units: list[ChannelUnit], buffering_available: bool = False):
+    def __init__(self, device: ParentDevice, channel_idx: ChannelIndex, buffering_available: bool = False):
         self._device = device
         self._channel_idx = channel_idx
-        self._supported_source_units = supported_source_units
-        self._supported_measure_units = supported_measure_units
         self._buffering_available = buffering_available
+        self._buffering_enabled = False
 
     def toggle_buffering(self, enable: bool) -> None:
         self.__check_buffering_available()
+        self._buffering_enabled = enable
         self._device.toggle_buffering(enable)
 
     def execute_buffered_script(self, blocking: bool, check_errors: bool = False) -> None:
         self.__check_buffering_available()
-        self._device.execute_buffered_script(blocking, check_errors)
+        self._device.execute_buffered_script(blocking=blocking, check_errors=check_errors)
 
     def read_buffer(self, check_errors: bool = False) -> list:
         self.__check_buffering_available()
@@ -70,11 +72,12 @@ class SourceChannel(Channel):
 
     def __init__(self, device: ParentDevice, channel_idx: ChannelIndex, supported_source_units: list[ChannelUnit],
                  buffering_available: bool = False):
-        super().__init__(device, channel_idx, supported_source_units, [], buffering_available)
+        Channel.__init__(self, device, channel_idx, buffering_available)
+        self._supported_source_units = supported_source_units
 
     def set_level(self, unit: ChannelUnit, value: float, check_errors: bool = False) -> None:
         if unit not in self._supported_source_units:
-            raise ValueError(f"Unit {unit} is not supported by this channel.")
+            raise ValueError(f"Setting unit {unit} is not supported by this channel.")
         self._device.set_channel_level(unit, self._channel_idx, value, check_errors)
 
     def toggle(self, enabled: bool, check_errors: bool = False) -> None:
@@ -86,7 +89,9 @@ class MeasureChannel(Channel):
 
     def __init__(self, device: ParentDevice, channel_idx: ChannelIndex, supported_measure_units: list[ChannelUnit],
                  buffering_available: bool = False):
-        super().__init__(device, channel_idx, [], supported_measure_units, buffering_available)
+        Channel.__init__(self, device, channel_idx, buffering_available)
+        self._supported_measure_units = supported_measure_units
+        self._buffer_index: dict = {}
 
     def measure(self, unit: ChannelUnit, check_errors: bool = False) -> float:
         if unit not in self._supported_source_units:
@@ -98,8 +103,5 @@ class SourceMeasureChannel(SourceChannel, MeasureChannel):
 
     def __init__(self, device: ParentDevice, channel_idx: ChannelIndex, supported_source_units: list[ChannelUnit],
                  supported_measure_units: list[ChannelUnit], buffering_available: bool = False):
-        self._device = device
-        self._channel_idx = channel_idx
-        self._supported_source_units = supported_source_units
-        self._supported_measure_units = supported_measure_units
-        self._buffering_available = buffering_available
+        SourceChannel.__init__(self, device, channel_idx, supported_source_units, buffering_available)
+        MeasureChannel.__init__(self, device, channel_idx, supported_measure_units, buffering_available)
