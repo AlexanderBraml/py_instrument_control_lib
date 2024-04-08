@@ -11,28 +11,28 @@ from py_instrument_control_lib.manufacturers.FloDevice import FloDevice
 class SwitchMatrix(AbstractSwitchMatrix, FloDevice):
 
     def set_row(self, row: int, check_errors: bool = False) \
-            -> None:        
+            -> None:
         if not (0 <= row <= 11):
             raise ValueError('Requirements not satisfied')
-        
+
         self.execute(f'{{"cmd": "SET_ROW", "row": "{row}"}}')
         if check_errors:
             self.check_error_buffer()
-    
+
     def set_col(self, col: int, check_errors: bool = False) \
-            -> None:        
+            -> None:
         if not (0 <= col <= 11):
             raise ValueError('Requirements not satisfied')
-        
+
         self.execute(f'{{"cmd": "SET_COLUMN", "column": "{col}"}}')
         if check_errors:
             self.check_error_buffer()
-    
+
     def set_row_col(self, row: int, col: int, check_errors: bool = False) \
-            -> None:        
+            -> None:
         if not (0 <= row <= 11 and 0 <= col <= 11):
             raise ValueError('Requirements not satisfied')
-        
+
         self.execute(f'{{"cmd": "SET_ROW_COLUMN", "row": "{row}", "column": "{col}"}}')
         if check_errors:
             self.check_error_buffer()
