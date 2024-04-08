@@ -227,10 +227,10 @@ class KEI2600(SMU, KeithleyDevice):
                                 exit_payload]
 
         for payload in payloads:
+            time.sleep(0.2)
             response = requests.post('http://' + self._config.ip + '/HttpCommand', json=payload)
             if response.status_code != 200:
                 raise DeviceException(msg='Failed to send and execute buffered script')
-            time.sleep(0.5)
 
     def execute_script(self, script_name: str, blocking: bool = True, check_errors: bool = False) \
             -> None:
