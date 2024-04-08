@@ -4,6 +4,8 @@ import sys
 host = sys.argv[1]
 port = int(sys.argv[2])
 
+c = 0
+
 if __name__ == '__main__':
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.bind((host, port))
@@ -24,8 +26,9 @@ if __name__ == '__main__':
 
             output += data
             if 'print' in data:
-                conn.sendall('1'.encode())
-                output += 'Sent 1\n'
+                conn.sendall(str(c).encode())
+                output += f'Sent {c}\n'
+                c += 1
 
         except socket.error as e:
             print("Error Occured.", e)
