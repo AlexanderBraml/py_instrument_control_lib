@@ -2,6 +2,7 @@ from abc import ABC
 from typing import Protocol, Any
 
 from py_instrument_control_lib.channels.ChannelEnums import ChannelUnit, ChannelIndex
+from py_instrument_control_lib.channels.FutureValue import FutureValue
 
 
 class ParentDevice(Protocol):
@@ -56,7 +57,17 @@ class Channel(ABC):
 
     def read_buffer(self, check_errors: bool = False) -> list:
         self.__check_buffering_available()
-        return self._device.read_buffer(check_errors)
+        return self._device.read_buffer(check_errors=check_errors)
+
+    def read_values(self, blocking: bool, *value_lists: list[Any]) -> None:
+        if self._buffering_enabled:
+            if self._device.get_buffer() is None:
+                self.execute_buffered_script(blocking)
+                self.read_buffer()
+            for value_list in value_lists:
+                for index, value in enumerate(value_list):
+                    if isinstance(value, FutureValue):
+                        value_list[index] = value.get(self._device.get_buffer())
 
     def next_buffer_element(self) -> Any:
         self.__check_buffering_available()
@@ -94,9 +105,18 @@ class MeasureChannel(Channel):
         self._buffer_index: dict = {}
 
     def measure(self, unit: ChannelUnit, check_errors: bool = False) -> float:
-        if unit not in self._supported_source_units:
-            raise ValueError(f"Unit {unit} is not supported by this channel.")
-        return self._device.measure_channel(unit, self._channel_idx, check_errors)
+        if unit not in self._supported_measure_units:
+            raise ValueError(f"Measuring unit {unit} is not supported by this channel.")
+
+        value = self._device.measure_channel(unit, self._channel_idx, check_errors)
+
+        if self._buffering_enabled:
+            if self._channel_idx not in self._buffer_index:
+                self._buffer_index[self._channel_idx] = 0
+            value = FutureValue(self._channel_idx, self._buffer_index[self._channel_idx])
+            self._buffer_index[self._channel_idx] += 1
+
+        return value
 
 
 class SourceMeasureChannel(SourceChannel, MeasureChannel):
