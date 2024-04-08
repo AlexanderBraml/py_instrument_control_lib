@@ -221,11 +221,16 @@ class KEI2600(SMU, KeithleyDevice):
         chunk_size = 32
         chunks = [script[i:i + chunk_size] for i in range(0, len(script), chunk_size)]
         exit_payload: dict = {'command': 'keyInput', 'value': 'K'}
-        payloads: list[dict] = [exit_payload,
-                                *[self.__make_payload('\n'.join(chunk)) for chunk in chunks],
+        payloads: list[dict] = list([exit_payload,
+                                *list([self.__make_payload('\n'.join(chunk)) for chunk in chunks]),
                                 self.__make_payload(f'{script_name}.save()'),
-                                exit_payload]
+                                exit_payload])
 
+        class NullOutput:
+            def write(self, _):
+                pass
+
+        print(payloads, file=NullOutput())
         for payload in payloads:
             time.sleep(0.2)
             response = requests.post('http://' + self._config.ip + '/HttpCommand', json=payload)
