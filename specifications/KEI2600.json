@@ -157,7 +157,7 @@
       "name": "execute_buffered_script",
       "type": "code",
       "signature": "blocking: bool = True, script_name: str = 'BufferedScript'",
-      "code": "for buffer in ('A_M_BUFFER', 'B_M_BUFFER'):\n    buffer_entries = len([line for line in self._buffered_script if buffer in line])\n    self._buffered_script.insert(0, f'{buffer} = smu{buffer[0].lower()}.makebuffer({buffer_entries})')\n    self._buffered_script.insert(1, f'{buffer}.appendmode = 1')\nself.send_execute_script(self._buffered_script, script_name, blocking)"
+      "code": "for buffer in ('A_M_BUFFER', 'B_M_BUFFER'):\n    buffer_entries = len([line for line in self._buffered_script if buffer in line])\n    self._buffered_script.insert(0, f'{buffer} = smu{buffer[0].lower()}.makebuffer({buffer_entries})')\n    self._buffered_script.insert(1, f'{buffer}.appendmode = 1')\nself.send_execute_script(self._buffered_script, script_name, blocking)\nself._buffer = None"
     },
     {
       "name": "send_script",
@@ -169,7 +169,7 @@
       "name": "execute_script",
       "type": "code",
       "signature": "script_name: str, blocking: bool = True",
-      "code": "buffering_enabled = hasattr(self, '_buffering_enabled') and self._buffering_enabled\nself.toggle_buffering(False)\nself.execute(f'{script_name}()')\nself.toggle_buffering(buffering_enabled)\n\nif blocking:\n    poll_payload = {\"command\": \"shellOutput\", \"timeout\": 3, \"acceptsMultiple\": True}\n    print('Waiting for script to complete')\n    status = requests.post('http://' + self._config.ip + '/HttpCommand', json=poll_payload)\n    while status.json()['status']['value'] == 'timeout':\n        status = requests.post('http://' + self._config.ip + '/HttpCommand', json=poll_payload)\n    print('Script finished')"
+      "code": "buffering_enabled = hasattr(self, '_buffering_enabled') and self._buffering_enabled\nself.toggle_buffering(False)\nself.execute(f'{script_name}()')\nself.toggle_buffering(buffering_enabled)\n\nif blocking:\n    time.sleep(2)\n    poll_payload = {\"command\": \"shellOutput\", \"timeout\": 3, \"acceptsMultiple\": True}\n    print('Waiting for script to complete')\n    status = requests.post('http://' + self._config.ip + '/HttpCommand', json=poll_payload)\n    while status.json()['status']['value'] == 'timeout':\n        status = requests.post('http://' + self._config.ip + '/HttpCommand', json=poll_payload)\n    print('Script finished')"
     },
     {
       "name": "send_execute_script",
@@ -185,18 +185,32 @@
       "code": "return {'command': 'shellInput', 'value': value}"
     },
     {
+      "name": "read_channel_buffers",
+      "type": "code",
+      "signature": "script: list[str] = None",
+      "return": "list[list[str]]",
+      "code": "if script is None:\n    script = self._buffered_script\nbuffering_enabled = hasattr(self, '_buffering_enabled') and self._buffering_enabled\nself.toggle_buffering(False)\nself._buffer = [self.read_channel_buffer(script, ChannelIndex(1)), self.read_channel_buffer(script, ChannelIndex(2))]\nself.toggle_buffering(buffering_enabled)\nreturn copy.deepcopy(self._buffer)"
+    },
+    {
+      "name": "read_channel_buffer",
+      "type": "code",
+      "signature": "script: list[str], channel_idx: ChannelIndex",
+      "return": "list[str]",
+      "code": "channel_idx.check(2)\nbuffer_name = ('A' if channel_idx.get() == 1 else 'B') + '_M_BUFFER'\nbuffer_size = len([line for line in script if buffer_name in line]) - 2\nreturn self.read_buffer(buffer_name, buffer_size, check_errors)"
+    },
+    {
       "name": "read_buffer",
+      "type": "code",
+      "signature": "buffer_name: str, buffer_size: int",
+      "return": "list[str]",
+      "code": "batch_size = 1024 // 15\nbuffer = []\noffset = 1\nwhile offset + batch_size <= buffer_size:\n    buffer += self.__get_buffer_content(offset, batch_size, buffer_name)\n    offset += batch_size\nif (remaining := buffer_size % batch_size) > 0:\n    buffer += self.__get_buffer_content(offset, remaining, buffer_name)\n\nself.execute(f'{buffer_name}.clear()')\nreturn buffer"
+    },
+    {
+      "name": "get_buffer",
       "type": "code",
       "signature": "",
       "return": "list[list[str]]",
-      "code": "buffering_enabled = hasattr(self, '_buffering_enabled') and self._buffering_enabled\nself.toggle_buffering(False)\nself._buffer = [self.__read_channel_buffer(ChannelIndex(1)), self.__read_channel_buffer(ChannelIndex(2))]\nself.toggle_buffering(buffering_enabled)\nreturn copy.deepcopy(self._buffer)"
-    },
-    {
-      "name": "__read_channel_buffer",
-      "type": "code",
-      "signature": "channel_idx: ChannelIndex",
-      "return": "list[str]",
-      "code": "channel_idx.check(2)\nbuffer_name = ('A' if channel_idx.get() == 1 else 'B') + '_M_BUFFER'\nbuffer_size = len([line for line in self._buffered_script if buffer_name in line]) - 2\nbatch_size = 1024 // 15\n\nbuffer = []\noffset = 1\nwhile offset + batch_size <= buffer_size:\n    buffer += self.__get_buffer_content(offset, batch_size, buffer_name)\n    offset += batch_size\n\nif (remaining := buffer_size % batch_size) > 0:\n    buffer += self.__get_buffer_content(offset, remaining, buffer_name)\n\nreturn buffer"
+      "code": "return copy.deepcopy(self._buffer) if hasattr(self, '_buffer') else None"
     },
     {
       "name": "__get_buffer_content",

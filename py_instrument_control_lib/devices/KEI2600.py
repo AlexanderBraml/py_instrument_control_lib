@@ -210,6 +210,7 @@ class KEI2600(SMU, KeithleyDevice):
             self._buffered_script.insert(0, f'{buffer} = smu{buffer[0].lower()}.makebuffer({buffer_entries})')
             self._buffered_script.insert(1, f'{buffer}.appendmode = 1')
         self.send_execute_script(self._buffered_script, script_name, blocking)
+        self._buffer = None
 
     def send_script(self, script: list[str] | str, script_name: str, check_errors: bool = False) \
             -> None:
@@ -239,6 +240,7 @@ class KEI2600(SMU, KeithleyDevice):
         self.toggle_buffering(buffering_enabled)
 
         if blocking:
+            time.sleep(2)
             poll_payload = {"command": "shellOutput", "timeout": 3, "acceptsMultiple": True}
             print('Waiting for script to complete')
             status = requests.post('http://' + self._config.ip + '/HttpCommand', json=poll_payload)
@@ -255,31 +257,41 @@ class KEI2600(SMU, KeithleyDevice):
             -> dict:
         return {'command': 'shellInput', 'value': value}
 
-    def read_buffer(self, check_errors: bool = False) \
+    def read_channel_buffers(self, script: list[str] = None, check_errors: bool = False) \
             -> list[list[str]]:
+        if script is None:
+            script = self._buffered_script
         buffering_enabled = hasattr(self, '_buffering_enabled') and self._buffering_enabled
         self.toggle_buffering(False)
-        self._buffer = [self.__read_channel_buffer(ChannelIndex(1)), self.__read_channel_buffer(ChannelIndex(2))]
+        self._buffer = [self.read_channel_buffer(script, ChannelIndex(
+            1)), self.read_channel_buffer(script, ChannelIndex(2))]
         self.toggle_buffering(buffering_enabled)
         return copy.deepcopy(self._buffer)
 
-    def __read_channel_buffer(self, channel_idx: ChannelIndex, check_errors: bool = False) \
+    def read_channel_buffer(self, script: list[str], channel_idx: ChannelIndex, check_errors: bool = False) \
             -> list[str]:
         channel_idx.check(2)
         buffer_name = ('A' if channel_idx.get() == 1 else 'B') + '_M_BUFFER'
-        buffer_size = len([line for line in self._buffered_script if buffer_name in line]) - 2
-        batch_size = 1024 // 15
+        buffer_size = len([line for line in script if buffer_name in line]) - 2
+        return self.read_buffer(buffer_name, buffer_size, check_errors)
 
+    def read_buffer(self, buffer_name: str, buffer_size: int, check_errors: bool = False) \
+            -> list[str]:
+        batch_size = 1024 // 15
         buffer = []
         offset = 1
         while offset + batch_size <= buffer_size:
             buffer += self.__get_buffer_content(offset, batch_size, buffer_name)
             offset += batch_size
-
         if (remaining := buffer_size % batch_size) > 0:
             buffer += self.__get_buffer_content(offset, remaining, buffer_name)
 
+        self.execute(f'{buffer_name}.clear()')
         return buffer
+
+    def get_buffer(self, check_errors: bool = False) \
+            -> list[list[str]]:
+        return copy.deepcopy(self._buffer) if hasattr(self, '_buffer') else None
 
     def __get_buffer_content(self, offset: int, batch_size: int, buffer_name: str, check_errors: bool = False) \
             -> list[str]:

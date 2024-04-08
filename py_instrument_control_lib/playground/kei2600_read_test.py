@@ -28,7 +28,7 @@ end
 smua.source.output = smua.OUTPUT_OFF'''.split('\n')
 
 smu.send_execute_script(script, 'NewMemristorReadTest', blocking=True)
-resistances = smu.read_channel_buffer_2('A_M_BUFFER', samples)
+resistances = smu.read_buffer('A_M_BUFFER', samples)
 
 print(resistances)
 

@@ -44,7 +44,7 @@ smu.toggle_channel(ChannelIndex(1), False)
 smu.toggle_channel(ChannelIndex(2), False)
 
 smu.execute_buffered_script(blocking=True)
-smu.read_buffer()
+smu.read_channel_buffers()
 
 for i in range(iterations):
     print(f'smu.measure(ChannelUnit.CURRENT, ChannelIndex(1)) = {smu.next_buffer_element(ChannelIndex(1))}')
