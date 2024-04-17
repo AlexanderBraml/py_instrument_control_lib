@@ -21,7 +21,7 @@ def response_data() -> int:
 
 
 if __name__ == '__main__':
-    if len(sys.argv) != 2:
+    if len(sys.argv) != 3:
         print('Invalid number of arguments. Expected IP and port of host.')
     host = sys.argv[1]
     port = int(sys.argv[2])
