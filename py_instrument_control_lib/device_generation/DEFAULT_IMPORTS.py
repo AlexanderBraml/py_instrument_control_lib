@@ -9,3 +9,4 @@ from py_instrument_control_lib.device_types.SMU import *
 from py_instrument_control_lib.manufacturers.FloDevice import FloDevice
 from py_instrument_control_lib.manufacturers.KeithleyDevice import KeithleyDevice
 from py_instrument_control_lib.manufacturers.KeysightDevice import KeysightDevice
+from py_instrument_control_lib.device_base.DeviceException import DeviceException
