@@ -2,7 +2,20 @@
   "name": "SwitchMatrix",
   "devicetype": "AbstractSwitchMatrix",
   "superclass": "FloDevice",
+  "imports": "import socket\nimport time",
   "commands": [
+    {
+      "name": "query",
+      "type": "code",
+      "signature": "query: str",
+      "code": "query += '\\n' if not query.endswith('\\n') else ''\nprint(query, end='')\nself._socket.sendall(query.encode())\nresponse = self._socket.recv(1024)\nreturn response.decode()"
+    },
+    {
+      "name": "execute",
+      "type": "code",
+      "signature": "command: str, ttl: int = 10, num_tries: int = 0",
+      "code": "if num_tries >= ttl:\n    raise DeviceException(msg=f'Fatal error, cannot establish connection after {ttl} attempts. Aborting.')\n\nif num_tries > 0:\n    time.sleep(2 ** num_tries)\n    self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)\n    try:\n        self._socket.settimeout(self._config.timeout)\n        self._socket.connect((self._config.ip, self._config.port))\n    except TimeoutError | OSError:\n        print(f'Error when trying to execute {command}. Already tried {num_tries} times.')\n\ntry:\n    self.query(command)\nexcept TimeoutError | OSError:\n    self.execute(command, ttl, num_tries + 1)"
+    },
     {
       "name": "set_row",
       "type": "generated",
@@ -23,6 +36,12 @@
       "signature": "row: int, col: int",
       "requirements": "0 <= row <= 11 and 0 <= col <= 11",
       "command": "f'{{\"cmd\": \"SET_ROW_COLUMN\", \"row\": \"{row}\", \"column\": \"{col}\"}}'"
+    },
+    {
+      "name": "get_channel",
+      "type": "code",
+      "signature": "channel_idx: ChannelIndex",
+      "code": "raise NotImplementedError('Channels are not supported when using a switch matrix.')"
     }
   ]
 }

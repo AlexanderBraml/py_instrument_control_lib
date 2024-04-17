@@ -100,8 +100,10 @@ def generate_code(spec: dict) -> str:
 def generate_module(filepath: str, target_dir: str = '.') -> None:
     spec = load_spec(abspath(filepath))
     module = DISCLAIMER.format(filepath) + '\n\n' + generate_code(spec)
-    with open(os.path.join(target_dir, spec['name'] + '.py'), 'w') as f:
+    file_name = os.path.join(target_dir, spec['name'] + '.py')
+    with open(file_name, 'w') as f:
         f.write(module)
+    os.system(f'python3 -m autopep8 -i --max-line-length 120 {abspath(file_name)}')
 
 
 if __name__ == '__main__':

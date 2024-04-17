@@ -56,6 +56,12 @@
       "type": "generated",
       "signature": "",
       "command": "'*UNLOCK'"
+    },
+    {
+      "name": "check_error_buffer",
+      "type": "code",
+      "signature": "",
+      "code": "pass"
     }
   ]
 }

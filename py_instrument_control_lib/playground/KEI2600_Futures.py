@@ -1,3 +1,6 @@
+import time
+
+from py_instrument_control_lib.channels.Channel import SourceMeasureChannel
 from py_instrument_control_lib.channels.ChannelEnums import ChannelUnit, ChannelIndex
 from py_instrument_control_lib.device_base.DeviceConfigs import TCPDeviceConfig
 from py_instrument_control_lib.device_types.SMU import SMUDisplay, SMUMode, SourceFunction, \
@@ -7,7 +10,8 @@ from py_instrument_control_lib.devices.KEI2600 import KEI2600
 smu_config = TCPDeviceConfig(ip='132.231.14.169', port=5025, timeout=5)
 smu = KEI2600(smu_config)
 smu.connect()
-smu.toggle_buffering(True)
+
+iterations = 2
 
 smu.set_limit(ChannelUnit.CURRENT, ChannelIndex(1), 1)
 smu.set_limit(ChannelUnit.CURRENT, ChannelIndex(2), 1)
@@ -22,28 +26,35 @@ for channel in (ChannelIndex(1), ChannelIndex(2)):
     smu.set_source_off_mode(channel, SourceOffMode.OUTPUT_ZERO)
     smu.set_source_settling(channel, SourceSettling.SMOOTH)
     smu.toggle_source_sink(channel, True)
+
+
+voltages_1 = []
+voltages_2 = []
+currents_1 = []
+currents_2 = []
+
+channel_1: SourceMeasureChannel = smu.get_channel(ChannelIndex(1))
+channel_2: SourceMeasureChannel = smu.get_channel(ChannelIndex(2))
+
+channel_1.toggle_buffering(True)
+channel_2.toggle_buffering(True)
+
 smu.toggle_channel(ChannelIndex(1), True)
 smu.toggle_channel(ChannelIndex(2), True)
-smu.set_level(ChannelUnit.VOLTAGE, ChannelIndex(1), 1)
+smu.set_level(ChannelUnit.VOLTAGE, ChannelIndex(1), 1.42)
 smu.set_level(ChannelUnit.VOLTAGE, ChannelIndex(2), 1)
-for i in range(0, 10):
-    smu.measure(ChannelUnit.CURRENT, ChannelIndex(1))
-    smu.measure(ChannelUnit.VOLTAGE, ChannelIndex(1))
-    smu.measure(ChannelUnit.VOLTAGE, ChannelIndex(2))
-    smu.measure(ChannelUnit.CURRENT, ChannelIndex(1))
-    smu.measure(ChannelUnit.VOLTAGE, ChannelIndex(2))
-smu.toggle_channel(ChannelIndex(1), False)
-smu.toggle_channel(ChannelIndex(2), False)
 
-smu.execute_buffered_script(blocking=True)
-smu.read_buffer()
-buff = smu.get_buffer()
+for i in range(iterations):
+    voltages_1.append(channel_1.measure(ChannelUnit.VOLTAGE))
+    currents_1.append(channel_1.measure(ChannelUnit.CURRENT))
+    voltages_2.append(channel_2.measure(ChannelUnit.VOLTAGE))
+    voltages_1.append(channel_1.measure(ChannelUnit.VOLTAGE))
+    currents_2.append(channel_2.measure(ChannelUnit.CURRENT))
 
-for i in range(0, 10):
-    print(f'smu.measure(ChannelUnit.CURRENT, ChannelIndex(1)) = {smu.next_buffer_element(ChannelIndex(1))}\n')
-    print(f'smu.measure(ChannelUnit.VOLTAGE, ChannelIndex(1)) = {smu.next_buffer_element(ChannelIndex(1))}\n')
-    print(f'smu.measure(ChannelUnit.VOLTAGE, ChannelIndex(2)) = {smu.next_buffer_element(ChannelIndex(2))}\n')
-    print(f'smu.measure(ChannelUnit.CURRENT, ChannelIndex(1)) = {smu.next_buffer_element(ChannelIndex(1))}\n')
-    print(f'smu.measure(ChannelUnit.VOLTAGE, ChannelIndex(2)) = {smu.next_buffer_element(ChannelIndex(2))}\n')
+channel_1.toggle(False)
+channel_2.toggle(False)
+
+channel_1.read_values(True, voltages_1, currents_1)
+channel_2.read_values(True, voltages_2, currents_2)
 
 pass

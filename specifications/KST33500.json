@@ -77,6 +77,12 @@
         "type": "code",
         "signature": "unit: ChannelUnit, channel_idx: ChannelIndex, level: float",
         "code": "channel_idx.check(2)\nself.execute(f'VOLTage:OFFSet {level / 2}')  # TODO: Find proper way to set voltage level"
+    },
+    {
+      "name": "check_error_buffer",
+      "type": "code",
+      "signature": "",
+      "code": "pass"
     }
   ]
 }

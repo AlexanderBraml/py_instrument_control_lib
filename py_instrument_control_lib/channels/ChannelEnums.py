@@ -21,3 +21,11 @@ class ChannelIndex:
 
     def get(self) -> int:
         return self._index
+
+    def __eq__(self, other):
+        if isinstance(other, ChannelIndex):
+            return other.get() == self.get()
+        return False
+
+    def __hash__(self):
+        return self.get()
