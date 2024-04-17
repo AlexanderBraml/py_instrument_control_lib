@@ -41,9 +41,7 @@ if __name__ == '__main__':
                 response = response_data()
                 conn.sendall(str(response).encode())
                 print('Sent:', response)
-
         except socket.error as e:
             print("Error Occured.", e)
             break
-
     conn.close()
