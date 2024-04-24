@@ -2,6 +2,7 @@ from py_instrument_control_lib.channels.ChannelEnums import ChannelIndex, Channe
 from py_instrument_control_lib.channels.Channel import SourceChannel, MeasureChannel, SourceMeasureChannel
 from py_instrument_control_lib.device_base.TCPDevice import TCPDevice
 from py_instrument_control_lib.device_types.AbstractSwitchMatrix import AbstractSwitchMatrix
+from py_instrument_control_lib.device_types.ClimateChamber import *
 from py_instrument_control_lib.device_types.FunctionGenerator import *
 from py_instrument_control_lib.device_types.Oscilloscope import *
 from py_instrument_control_lib.device_types.PowerSupply import *
@@ -9,4 +10,5 @@ from py_instrument_control_lib.device_types.SMU import *
 from py_instrument_control_lib.manufacturers.FloDevice import FloDevice
 from py_instrument_control_lib.manufacturers.KeithleyDevice import KeithleyDevice
 from py_instrument_control_lib.manufacturers.KeysightDevice import KeysightDevice
+from py_instrument_control_lib.manufacturers.WeisstechnikDevice import WeisstechnikDevice
 from py_instrument_control_lib.device_base.DeviceException import DeviceException
