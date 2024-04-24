@@ -22,6 +22,7 @@ class WeisstechnikDevice(TCPDevice, ABC):
         self._socket.sendall(command.encode('iso-8859-1'))
 
     def query(self, query: str) -> str:
+        self.__send_command(query)
         raw_response = self._socket.recv(1024).decode('iso-8859-1')
         processed_response = raw_response.replace('\r', '').replace('\n', '').split('¶')
         error_code = processed_response[0]
