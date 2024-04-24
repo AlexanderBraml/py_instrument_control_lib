@@ -1,0 +1,87 @@
+{
+  "name": "WSTLabEvent",
+  "devicetype": "ClimateChamber",
+  "superclass": "WeisstechnikDevice",
+  "imports": "from time import sleep\nfrom math import isclose",
+  "commands": [
+    {
+      "name": "set_target_temperature",
+      "type": "generated",
+      "signature": "temperature: int",
+      "command": "f'11001¶1¶1¶{temperature:.1f}'"
+    },
+    {
+      "name": "set_target_humidity",
+      "type": "generated",
+      "signature": "humidity: int",
+      "command": "f'11001¶1¶2¶{humidity:.1f}'"
+    },
+    {
+      "name": "get_current_temperature",
+      "type": "generated",
+      "signature": "",
+      "return": "float",
+      "command": "'11004¶1¶1'"
+    },
+    {
+      "name": "get_current_humidity",
+      "type": "generated",
+      "signature": "",
+      "return": "float",
+      "command": "'11004¶1¶2'"
+    },{
+      "name": "get_target_temperature",
+      "type": "generated",
+      "signature": "",
+      "return": "float",
+      "command": "'11002¶1¶1'"
+    },{
+      "name": "get_target_humidity",
+      "type": "generated",
+      "signature": "",
+      "return": "float",
+      "command": "'11002¶1¶2'"
+    },{
+      "name": "reset_errors",
+      "type": "generated",
+      "signature": "",
+      "command": "'17012¶1'"
+    },{
+      "name": "get_status",
+      "type": "code",
+      "return": "Status",
+      "signature": "",
+      "code": "val = self.query('10012¶1')\nif check_errors:\n    self.check_error_buffer()\nreturn Status(val)"
+    },
+    {
+      "name": "start",
+      "type": "generated",
+      "signature": "",
+      "command": "'14001¶1¶1¶1'"
+    },
+    {
+      "name": "stop",
+      "type": "generated",
+      "signature": "",
+      "command": "'14001¶1¶1¶0'"
+    },
+    {
+      "name": "wait_for_stable_conditions",
+      "type": "code",
+      "signature": "time_in_seconds: int = 120, abs_tolerance_temp: float = 0.05, abs_tolerance_hum: float = 0.1",
+      "code": "target_temperature, target_humidity = self.get_target_data()\nhistory = [False] * time_in_seconds\nwhile any(flag is False for flag in history):\n    temperature, humidity = self.get_current_data()\n    history.pop()\n    history.insert(0, isclose(temperature, target_temperature, abs_tol=abs_tolerance_temp) and isclose(humidity, target_humidity, abs_tol=abs_tolerance_hum))\n    sleep(1)"
+    },
+    {
+      "name": "get_channel",
+      "type": "code",
+      "signature": "channel_idx: ChannelIndex",
+      "code": "raise NotImplementedError('Channels are not supported when using a climate chamber.')"
+    },
+    {
+      "name": "check_error_buffer",
+      "type": "code",
+      "signature": "",
+      "code": "if self._last_error is not None:\n    raise DeviceException(msg=self._last_error)"
+    }
+  ]
+}
