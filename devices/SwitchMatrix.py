@@ -34,8 +34,8 @@ class SwitchMatrix(AbstractSwitchMatrix, FloDevice):
             try:
                 self._socket.settimeout(self._config.timeout)
                 self._socket.connect((self._config.ip, self._config.port))
-            except TimeoutError | OSError:
-                print(f'Error when trying to execute {command}. Already tried {num_tries} times.')
+            except (TimeoutError, OSError) as e:
+                print(f'Error ({e}) when trying to execute {command}. Already tried {num_tries} times.')
 
         try:
             self.query(command)
