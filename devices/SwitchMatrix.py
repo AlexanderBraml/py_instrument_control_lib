@@ -39,7 +39,7 @@ class SwitchMatrix(AbstractSwitchMatrix, FloDevice):
 
         try:
             self.query(command)
-        except TimeoutError | OSError:
+        except (TimeoutError, OSError):
             self.execute(command, ttl, num_tries + 1)
 
     def set_row(self, row: int, check_errors: bool = False) \
