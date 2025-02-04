@@ -6,38 +6,38 @@
     {
       "name": "toggle",
       "type": "generated",
-      "signature": "enable: bool",
-      "command": "f'OUTPut {\"ON\" if enable else \"OFF\"}'"
+      "signature": "channel_idx: ChannelIndex, enable: bool",
+      "command": "f'OUTPut{channel_idx.get()} {\"ON\" if enable else \"OFF\"}'"
     },
     {
       "name": "set_frequency",
       "type": "generated",
-      "signature": "frequency: float",
-      "command": "f'FREQuency {frequency}'"
+      "signature": "channel_idx: ChannelIndex, frequency: float",
+      "command": "f'SOURce{channel_idx.get()}:FREQuency {frequency}'"
     },
     {
       "name": "set_amplitude",
       "type": "generated",
-      "signature": "frequency: float, constrain: str",
-      "command": "f'VOLTage{\":\" + constrain if constrain else \"\"} {frequency}'"
+      "signature": "channel_idx: ChannelIndex, frequency: float, constrain: str",
+      "command": "f'SOURce{channel_idx.get()}:VOLTage{\":\" + constrain if constrain else \"\"} {frequency}'"
     },
     {
       "name": "set_offset",
       "type": "code",
-      "signature": "offset: float, impedance: float = float('inf')",
-      "code": "self.set_impedance(impedance)\nself.execute(f'VOLTage:OFFSet {offset}')"
+      "signature": "channel_idx: ChannelIndex, offset: float, impedance: float = float('inf')",
+      "code": "self.set_impedance(channel_idx, impedance)\nself.execute(f'SOURce{channel_idx.get()}:VOLTage:OFFSet {offset}')"
     },
     {
       "name": "set_phase",
       "type": "generated",
-      "signature": "phase: float",
-      "command": "f'PHASe {phase}'"
+      "signature": "channel_idx: ChannelIndex, phase: float",
+      "command": "f'SOURce{channel_idx.get()}:PHASe {phase}'"
     },
     {
       "name": "set_function",
       "type": "generated",
-      "signature": "function: FunctionType",
-      "command": "f'FUNCtion {function.value}'"
+      "signature": "channel_idx: ChannelIndex, function: FunctionType",
+      "command": "f'SOURce{channel_idx.get()}:FUNCtion {function.value}'"
     },
     {
       "name": "display",
@@ -56,8 +56,8 @@
       "name": "set_pulsewidth",
       "docs": "Pulswidth unit: ms",
       "type": "generated",
-      "signature": "pulsewidth: float",
-      "command": "f'FUNCtion:PULSe:WIDTh {pulsewidth} ms'"
+      "signature": "channel_idx: ChannelIndex, pulsewidth: float",
+      "command": "f'SOURce{channel_idx.get()}:FUNCtion:PULSe:WIDTh {pulsewidth} ms'"
     },
     {
       "name": "get_channel",
@@ -70,19 +70,19 @@
       "name": "toggle_channel",
       "type": "code",
       "signature": "channel_idx: ChannelIndex, enable: bool",
-      "code": "channel_idx.check(2)\nself.toggle(enable)"
+      "code": "channel_idx.check(2)\nself.toggle(channel_idx, enable)"
     },
     {
       "name": "set_channel_level",
       "type": "code",
       "signature": "unit: ChannelUnit, channel_idx: ChannelIndex, level: float, impedance: float = float('inf')",
-      "code": "channel_idx.check(2)\nself.set_offset(level, impedance)"
+      "code": "channel_idx.check(2)\nself.set_offset(channel_idx, level, impedance)"
     },
     {
       "name" : "set_impedance",
       "type": "code",
-      "signature": "impedance: float",
-      "code": "if not (0 < impedance < 10000 or impedance == float('inf')):\n    raise ValueError('Impedance has to be between 0 and 10,000 or equal to infinity!')\nif impedance == float('inf'):\n    impedance = 'INFinity'\nelse:    impedance = int(impedance)\nself.execute(f'OUTPut:LOAD {impedance}')"
+      "signature": "channel_idx: ChannelIndex, impedance: float",
+      "code": "if not (0 < impedance < 10000 or impedance == float('inf')):\n    raise ValueError('Impedance has to be between 0 and 10,000 or equal to infinity!')\nif impedance == float('inf'):\n    impedance = 'INFinity'\nelse:    impedance = int(impedance)\nself.execute(f'OUTPut{channel_idx.get()}:LOAD {impedance}')"
     },
     {
       "name": "check_error_buffer",

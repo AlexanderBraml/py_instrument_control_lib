@@ -1,6 +1,7 @@
 from abc import abstractmethod, ABC
 from enum import Enum
 
+from py_instrument_control_lib.channels.ChannelEnums import ChannelIndex
 from py_instrument_control_lib.device_base.Device import Device
 
 
@@ -30,29 +31,29 @@ class FunctionType(Enum):
 class FunctionGenerator(Device, ABC):
 
     @abstractmethod
-    def toggle(self, enable: bool, check_errors: bool = False):
+    def toggle(self, channel_idx: ChannelIndex, enable: bool, check_errors: bool = False):
         pass
 
     @abstractmethod
-    def set_frequency(self, frequency: float, check_errors: bool = False):
+    def set_frequency(self, channel_idx: ChannelIndex, frequency: float, check_errors: bool = False):
         pass
 
     @abstractmethod
-    def set_amplitude(self, frequency: float, constrain: str, check_errors: bool = False):
+    def set_amplitude(self, channel_idx: ChannelIndex, frequency: float, constrain: str, check_errors: bool = False):
         pass
 
     @abstractmethod
-    def set_phase(self, phase: float, check_errors: bool = False):
+    def set_phase(self, channel_idx: ChannelIndex, phase: float, check_errors: bool = False):
         pass
 
     @abstractmethod
-    def set_function(self, function: FunctionType, check_errors: bool = False):
+    def set_function(self, channel_idx: ChannelIndex, function: FunctionType, check_errors: bool = False):
         pass
 
     @abstractmethod
-    def set_offset(self, offset: float, impedance: float = float('inf'), check_errors: bool = False):
+    def set_offset(self, channel_idx: ChannelIndex, offset: float, impedance: float = float('inf'), check_errors: bool = False):
         pass
 
     @abstractmethod
-    def set_impedance(self, impedance: float):
+    def set_impedance(self, channel_idx: ChannelIndex, impedance: float):
         pass
