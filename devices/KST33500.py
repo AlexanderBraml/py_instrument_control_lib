@@ -82,7 +82,15 @@ class KST33500(FunctionGenerator, KeysightDevice):
     def set_channel_level(self, unit: ChannelUnit, channel_idx: ChannelIndex, level: float, check_errors: bool = False) \
             -> None:
         channel_idx.check(2)
-        self.execute(f'VOLTage:OFFSet {level / 2}')  # TODO: Find proper way to set voltage level
+        self.execute(f'VOLTage:OFFSet {level}')
+
+    def set_impedance(self, impedance: float, check_errors: bool = False) \
+            -> None:
+        if not (0 < impedance < 10000 or impedance == float('inf')):
+            raise ValueError('Impedance has to be between 0 and 10,000 or equal to infinity!')
+        if impedance == float('inf'):
+            impedance = 'INFinity'
+        self.execute(f'OUTPut:LOAD {impedance}')
 
     def check_error_buffer(self, check_errors: bool = False) \
             -> None:

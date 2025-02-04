@@ -74,9 +74,15 @@
     },
     {
       "name": "set_channel_level",
-        "type": "code",
-        "signature": "unit: ChannelUnit, channel_idx: ChannelIndex, level: float",
-        "code": "channel_idx.check(2)\nself.execute(f'VOLTage:OFFSet {level / 2}')  # TODO: Find proper way to set voltage level"
+      "type": "code",
+      "signature": "unit: ChannelUnit, channel_idx: ChannelIndex, level: float",
+      "code": "channel_idx.check(2)\nself.execute(f'VOLTage:OFFSet {level}')"
+    },
+    {
+      "name" : "set_impedance",
+      "type": "code",
+      "signature": "impedance: float",
+      "code": "if not (0 < impedance < 10000 or impedance == float('inf')):\n    raise ValueError('Impedance has to be between 0 and 10,000 or equal to infinity!')\nif impedance == float('inf'):\n    impedance = 'INFinity'\nself.execute(f'OUTPut:LOAD {impedance}')"
     },
     {
       "name": "check_error_buffer",
