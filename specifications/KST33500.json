@@ -23,9 +23,9 @@
     },
     {
       "name": "set_offset",
-      "type": "generated",
-      "signature": "offset: float",
-      "command": "f'VOLTage:OFFSet {offset}'"
+      "type": "code",
+      "signature": "offset: float, impedance: float = float('inf')",
+      "code": "self.set_impedance(impedance)\nself.execute(f'VOLTage:OFFSet {offset}')"
     },
     {
       "name": "set_phase",
@@ -75,14 +75,14 @@
     {
       "name": "set_channel_level",
       "type": "code",
-      "signature": "unit: ChannelUnit, channel_idx: ChannelIndex, level: float",
-      "code": "channel_idx.check(2)\nself.execute(f'VOLTage:OFFSet {level}')"
+      "signature": "unit: ChannelUnit, channel_idx: ChannelIndex, level: float, impedance: float = float('inf')",
+      "code": "channel_idx.check(2)\nself.set_offset(level, impedance)"
     },
     {
       "name" : "set_impedance",
       "type": "code",
       "signature": "impedance: float",
-      "code": "if not (0 < impedance < 10000 or impedance == float('inf')):\n    raise ValueError('Impedance has to be between 0 and 10,000 or equal to infinity!')\nif impedance == float('inf'):\n    impedance = 'INFinity'\nself.execute(f'OUTPut:LOAD {impedance}')"
+      "code": "if not (0 < impedance < 10000 or impedance == float('inf')):\n    raise ValueError('Impedance has to be between 0 and 10,000 or equal to infinity!')\nif impedance == float('inf'):\n    impedance = 'INFinity'\nelse:    impedance = int(impedance)\nself.execute(f'OUTPut:LOAD {impedance}')"
     },
     {
       "name": "check_error_buffer",

@@ -30,11 +30,10 @@ class KST33500(FunctionGenerator, KeysightDevice):
         if check_errors:
             self.check_error_buffer()
 
-    def set_offset(self, offset: float, check_errors: bool = False) \
+    def set_offset(self, offset: float, impedance: float = float('inf'), check_errors: bool = False) \
             -> None:
+        self.set_impedance(impedance)
         self.execute(f'VOLTage:OFFSet {offset}')
-        if check_errors:
-            self.check_error_buffer()
 
     def set_phase(self, phase: float, check_errors: bool = False) \
             -> None:
@@ -79,10 +78,10 @@ class KST33500(FunctionGenerator, KeysightDevice):
         channel_idx.check(2)
         self.toggle(enable)
 
-    def set_channel_level(self, unit: ChannelUnit, channel_idx: ChannelIndex, level: float, check_errors: bool = False) \
+    def set_channel_level(self, unit: ChannelUnit, channel_idx: ChannelIndex, level: float, impedance: float = float('inf'), check_errors: bool = False) \
             -> None:
         channel_idx.check(2)
-        self.execute(f'VOLTage:OFFSet {level}')
+        self.set_offset(level, impedance)
 
     def set_impedance(self, impedance: float, check_errors: bool = False) \
             -> None:
@@ -90,6 +89,8 @@ class KST33500(FunctionGenerator, KeysightDevice):
             raise ValueError('Impedance has to be between 0 and 10,000 or equal to infinity!')
         if impedance == float('inf'):
             impedance = 'INFinity'
+        else:
+            impedance = int(impedance)
         self.execute(f'OUTPut:LOAD {impedance}')
 
     def check_error_buffer(self, check_errors: bool = False) \
