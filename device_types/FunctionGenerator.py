@@ -50,5 +50,9 @@ class FunctionGenerator(Device, ABC):
         pass
 
     @abstractmethod
-    def set_offset(self, offset: float, check_errors: bool = False):
+    def set_offset(self, offset: float, impedance: float = float('inf'), check_errors: bool = False):
+        pass
+
+    @abstractmethod
+    def set_impedance(self, impedance: float):
         pass
