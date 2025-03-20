@@ -102,6 +102,26 @@ class KEI2600(SMU, KeithleyDevice):
         if check_errors:
             self.check_error_buffer()
 
+    def toggle_filter(self, channel_idx: ChannelIndex, enable: bool, check_errors: bool = False) \
+            -> None:
+        self.execute(f'{self.__to_channel(channel_idx)}.measure.filter.enable = {self.__to_channel(channel_idx)}.{"FILTER_ON" if enable else "FILTER_OFF"}')
+        if check_errors:
+            self.check_error_buffer()
+
+    def set_filter_type(self, channel_idx: ChannelIndex, filter_type: SMUFilterType, check_errors: bool = False) \
+            -> None:
+        self.execute(f'{self.__to_channel(channel_idx)}.measure.filter.type = {self.__to_channel(channel_idx)}.{filter_type.value}')
+        if check_errors:
+            self.check_error_buffer()
+
+    def set_filter_count(self, channel_idx: ChannelIndex, count: int, check_errors: bool = False) \
+            -> None:
+        if not (0 < count < 101):
+            raise ValueError('Filter count must be between 1 and 100!')
+        self.execute(f'{self.__to_channel(channel_idx)}.measure.filter.count = {count}')
+        if check_errors:
+            self.check_error_buffer()
+
     def set_range(self, unit: ChannelUnit, channel_idx: ChannelIndex, mode: SMUMode, range_: float, check_errors: bool = False) \
             -> None:
         if not (unit in (ChannelUnit.VOLTAGE, ChannelUnit.CURRENT)):

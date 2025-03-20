@@ -4,6 +4,11 @@ from enum import Enum
 from py_instrument_control_lib.channels.ChannelEnums import ChannelIndex, ChannelUnit
 from py_instrument_control_lib.device_base.Device import Device
 
+class SMUFilterType(Enum):
+    FILTER_MEDIAN = 'FILTER_MEDIAN'
+    FILTER_MOVING_AVG = 'FILTER_MOVING_AVG'
+    FILTER_REPEAT_AVG = 'FILTER_REPEAT_AVG'
+
 
 class SMUMode(Enum):
     SOURCE = 'source'
