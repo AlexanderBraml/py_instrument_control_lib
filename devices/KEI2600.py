@@ -1,19 +1,29 @@
 """
-This code is automatically generated from '../../specifications/KEI2600.json'.
+This code is automatically generated from 'specifications/KEI2600.json'.
 Any changes made to this file are overwritten if you regenerate this module.
 Only make changes in the source file.
 """
 
-import copy
-import time
-from typing import Optional
+from py_instrument_control_lib.channels.ChannelEnums import ChannelIndex, ChannelUnit
+from py_instrument_control_lib.channels.Channel import SourceChannel, MeasureChannel, SourceMeasureChannel
+from py_instrument_control_lib.device_base.TCPDevice import TCPDevice
+from py_instrument_control_lib.device_types.AbstractSwitchMatrix import AbstractSwitchMatrix
+from py_instrument_control_lib.device_types.ClimateChamber import *
+from py_instrument_control_lib.device_types.FunctionGenerator import *
+from py_instrument_control_lib.device_types.Oscilloscope import *
+from py_instrument_control_lib.device_types.PowerSupply import *
+from py_instrument_control_lib.device_types.SMU import *
+from py_instrument_control_lib.manufacturers.FloDevice import FloDevice
+from py_instrument_control_lib.manufacturers.KeithleyDevice import KeithleyDevice
+from py_instrument_control_lib.manufacturers.KeysightDevice import KeysightDevice
+from py_instrument_control_lib.manufacturers.WeisstechnikDevice import WeisstechnikDevice
+from py_instrument_control_lib.device_base.DeviceException import DeviceException
 
 import requests
-
-from py_instrument_control_lib.channels.Channel import SourceMeasureChannel
 from py_instrument_control_lib.device_base.DeviceException import DeviceException
-from py_instrument_control_lib.device_types.SMU import *
-from py_instrument_control_lib.manufacturers.KeithleyDevice import KeithleyDevice
+import time
+import copy
+from typing import Optional
 
 
 class KEI2600(SMU, KeithleyDevice):
@@ -104,20 +114,22 @@ class KEI2600(SMU, KeithleyDevice):
 
     def toggle_filter(self, channel_idx: ChannelIndex, enable: bool, check_errors: bool = False) \
             -> None:
-        self.execute(f'{self.__to_channel(channel_idx)}.measure.filter.enable = {self.__to_channel(channel_idx)}.{"FILTER_ON" if enable else "FILTER_OFF"}')
+        self.execute(f'{self.__to_channel(channel_idx)}.measure.filter.enable = {self.__to_channel(channel_idx)}.{'FILTER_ON' if enable else 'FILTER_OFF'}')
         if check_errors:
             self.check_error_buffer()
 
     def set_filter_type(self, channel_idx: ChannelIndex, filter_type: SMUFilterType, check_errors: bool = False) \
             -> None:
-        self.execute(f'{self.__to_channel(channel_idx)}.measure.filter.type = {self.__to_channel(channel_idx)}.{filter_type.value}')
+        self.execute(
+            f'{self.__to_channel(channel_idx)}.measure.filter.type = {self.__to_channel(channel_idx)}.{filter_type.value}')
         if check_errors:
             self.check_error_buffer()
 
     def set_filter_count(self, channel_idx: ChannelIndex, count: int, check_errors: bool = False) \
             -> None:
         if not (0 < count < 101):
-            raise ValueError('Filter count must be between 1 and 100!')
+            raise ValueError('Requirements not satisfied')
+
         self.execute(f'{self.__to_channel(channel_idx)}.measure.filter.count = {count}')
         if check_errors:
             self.check_error_buffer()
