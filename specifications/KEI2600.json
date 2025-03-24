@@ -66,6 +66,25 @@
       "command": "f'{self.__to_channel(channel_idx)}.measure.analogfilter = {int(enable)}'"
     },
     {
+      "name": "toggle_filter",
+      "type": "generated",
+      "signature": "channel_idx: ChannelIndex, enable: bool",
+      "command": "f'{self.__to_channel(channel_idx)}.measure.filter.enable = {self.__to_channel(channel_idx)}.{'FILTER_ON' if enable else 'FILTER_OFF'}'"
+    },
+    {
+      "name": "set_filter_type",
+      "type": "generated",
+      "signature": "channel_idx: ChannelIndex, filter_type: SMUFilterType",
+      "command": "f'{self.__to_channel(channel_idx)}.measure.filter.type = {self.__to_channel(channel_idx)}.{filter_type.value}'"
+    },
+    {
+      "name": "set_filter_count",
+      "type": "generated",
+      "signature": "channel_idx: ChannelIndex, count: int",
+      "requirements": "0 < count < 101",
+      "command": "f'{self.__to_channel(channel_idx)}.measure.filter.count = {count}'"
+    },
+    {
       "name": "set_range",
       "type": "generated",
       "signature": "unit: ChannelUnit, channel_idx: ChannelIndex, mode: SMUMode, range_: float",
