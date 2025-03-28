@@ -114,7 +114,8 @@ class KEI2600(SMU, KeithleyDevice):
 
     def toggle_filter(self, channel_idx: ChannelIndex, enable: bool, check_errors: bool = False) \
             -> None:
-        self.execute(f'{self.__to_channel(channel_idx)}.measure.filter.enable = {self.__to_channel(channel_idx)}.{'FILTER_ON' if enable else 'FILTER_OFF'}')
+        self.execute(
+            f'{self.__to_channel(channel_idx)}.measure.filter.enable = {self.__to_channel(channel_idx)}.{"FILTER_ON" if enable else "FILTER_OFF"}')
         if check_errors:
             self.check_error_buffer()
 

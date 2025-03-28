@@ -92,6 +92,21 @@ class SMU(Device, ABC):
         pass
 
     @abstractmethod
+    def toggle_filter(self, channel_idx: ChannelIndex, enable: bool, check_errors: bool = False) \
+            -> None:
+        pass
+
+    @abstractmethod
+    def set_filter_type(self, channel_idx: ChannelIndex, filter_type: SMUFilterType, check_errors: bool = False) \
+            -> None:
+        pass
+
+    @abstractmethod
+    def set_filter_count(self, channel_idx: ChannelIndex, count: int, check_errors: bool = False) \
+            -> None:
+        pass
+
+    @abstractmethod
     def set_sense_mode(self, channel_idx: ChannelIndex, sense_arg: SMUSense, check_errors: bool = False) \
             -> None:
         pass
