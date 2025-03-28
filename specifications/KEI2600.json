@@ -69,7 +69,7 @@
       "name": "toggle_filter",
       "type": "generated",
       "signature": "channel_idx: ChannelIndex, enable: bool",
-      "command": "f'{self.__to_channel(channel_idx)}.measure.filter.enable = {self.__to_channel(channel_idx)}.{'FILTER_ON' if enable else 'FILTER_OFF'}'"
+      "command": "f'{self.__to_channel(channel_idx)}.measure.filter.enable = {self.__to_channel(channel_idx)}.{\"FILTER_ON\" if enable else \"FILTER_OFF\"}'"
     },
     {
       "name": "set_filter_type",
