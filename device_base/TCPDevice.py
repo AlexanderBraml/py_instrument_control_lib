@@ -8,8 +8,9 @@ from py_instrument_control_lib.device_base.DeviceConfigs import TCPDeviceConfig
 class TCPDevice(Device, ABC):
     _config: TCPDeviceConfig
 
-    def __init__(self, config: TCPDeviceConfig) -> None:
+    def __init__(self, config: TCPDeviceConfig, requires_newline: bool = True) -> None:
         super().__init__(config)
+        self._requires_newline = requires_newline
         if config.timeout <= 0:
             raise ValueError('Invalid timeout. Timeout needs to be >= 1!')
         self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -19,8 +20,8 @@ class TCPDevice(Device, ABC):
         self._socket.connect((self._config.ip, self._config.port))
 
     def execute(self, command: str) -> None:
-        command += '\n' if not command.endswith('\n') else ''
-        print(command, end='')
+        command += '\n' if not command.endswith('\n') and self._requires_newline else ''
+        print(command, end='\n' if not command.endswith('\n') else '')
         self._socket.sendall(command.encode())
 
     @abstractmethod
