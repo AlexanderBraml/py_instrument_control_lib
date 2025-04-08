@@ -20,6 +20,11 @@ class PSMode(Enum):
     W4 = "4W"
 
 
+class PSPowerMode(Enum):
+    CONSTANT_VOLTAGE = 0
+    CONSTANT_CURRENT = 1
+
+
 class PowerSupply(Device, ABC):  # TODO: TCPDevice was here previously, mistake?
 
     def toggle(self, channel: PSChannel, enable: bool) -> None:
